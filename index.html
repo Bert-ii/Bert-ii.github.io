@@ -1,0 +1,2983 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 已移除 Unsplash 图片依赖，改用纯 CSS 渐变背景 + emoji 占位 -->
+<title>下顿吃什么</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+.particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+/* ===== Header ===== */
+.header {
+  text-align: center;
+  padding: 50px 20px 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.header h1 {
+  font-size: 48px;
+  color: #fff;
+  margin-bottom: 6px;
+  letter-spacing: 3px;
+  text-shadow: 0 2px 12px rgba(232,93,58,0.4);
+}
+
+.header .subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 1px;
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ===== Dice area ===== */
+.dice-area {
+  text-align: center;
+  padding: 24px 0 20px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-dice {
+  background: linear-gradient(135deg, #e85d3a, #f08060);
+  color: #fff;
+  border: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 32px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 6px 28px rgba(232,93,58,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-dice:hover:not(.disabled) {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 36px rgba(232,93,58,0.55);
+}
+
+.btn-dice:active:not(.disabled) {
+  transform: scale(0.93);
+}
+
+.btn-dice.rolling {
+  animation: diceRoll 0.8s ease-out;
+}
+
+.btn-dice.disabled {
+  background: #3a3a4a;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@keyframes diceRoll {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(120deg) scale(1.15); }
+  50% { transform: rotate(300deg) scale(0.9); }
+  75% { transform: rotate(480deg) scale(1.08); }
+  100% { transform: rotate(720deg) scale(1); }
+}
+
+.roll-counter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.roll-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e85d3a;
+  transition: all 0.4s;
+  box-shadow: 0 0 8px rgba(232,93,58,0.5);
+}
+
+.roll-dot.used {
+  background: #3a3a4a;
+  box-shadow: none;
+}
+
+.roll-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 1px;
+}
+
+.disclaimer-float {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  max-width: 280px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.55);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.qrcode-float {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  padding: 10px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  backdrop-filter: blur(6px);
+  text-align: center;
+}
+
+.qrcode-float img {
+  display: block;
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+}
+
+.qrcode-float span {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(0,0,0,0.55);
+  line-height: 1.4;
+}
+
+/* ===== Main card ===== */
+.card-stage {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 20px 50px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card-container {
+  aspect-ratio: 3 / 4;
+  perspective: 1000px;
+  flex-shrink: 0;
+  animation: cardSlideIn 0.5s ease-out;
+}
+
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-container.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+/* --- Front: unrevealed --- */
+.card-front {
+  background: linear-gradient(145deg, #1e2a3a, #151d2b);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  transition: all 0.4s;
+}
+
+.card-front .mystery-emoji {
+  font-size: 80px;
+  transition: all 0.5s;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.card-front .mystery-text {
+  font-size: 22px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 3px;
+}
+
+/* --- Front: revealed --- */
+.card-front.revealed {
+  border-color: rgba(232,93,58,0.25);
+  box-shadow: 0 12px 48px rgba(232,93,58,0.15);
+}
+
+.card-front.revealed .mystery-emoji {
+  animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.card-front.revealed .mystery-text {
+  color: #fff;
+  font-size: 32px;
+  font-weight: bold;
+  animation: fadeSlideIn 0.5s ease-out 0.15s both;
+}
+
+.card-front.revealed .mystery-hint {
+  display: block;
+  font-size: 14px;
+  color: rgba(255,255,255,0.35);
+  animation: fadeSlideIn 0.5s ease-out 0.3s both;
+}
+
+.card-front .mystery-hint {
+  display: none;
+}
+
+.card-container:not(.flipped):hover .card-front.revealed {
+  transform: scale(1.02);
+  border-color: rgba(232,93,58,0.5);
+  cursor: pointer;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Back face --- */
+.card-back {
+  background: #fff;
+  color: #333;
+  transform: rotateY(180deg);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  overflow-y: auto;
+}
+
+.card-back .back-title {
+  font-size: 18px;
+  color: #e85d3a;
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #fdd9cf;
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+
+.card-back .recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.card-back .recipe-item {
+  background: #fef9f0;
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.card-back .recipe-item:hover {
+  background: #fff5f2;
+  border-color: #fdd9cf;
+  transform: translateX(4px);
+}
+
+.card-back .recipe-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #fdd9cf;
+}
+
+.card-back .recipe-thumb-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #fdd9cf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.card-back .recipe-item-body { flex: 1; min-width: 0; }
+
+.card-back .recipe-item .recipe-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.card-back .recipe-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+.card-back .recipe-meta-tag {
+  background: #fff;
+  color: #888;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  border: 1px solid #eee;
+}
+
+.card-back .recipe-item .recipe-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.card-back .recipe-item .mini-tag {
+  background: #fdd9cf;
+  color: #b8543a;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.card-back .back-footer {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.card-back .back-footer:hover { color: #e85d3a; }
+
+.card-back::-webkit-scrollbar { width: 4px; }
+.card-back::-webkit-scrollbar-thumb { background: #eee; border-radius: 2px; }
+.card-back::-webkit-scrollbar-track { background: transparent; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: #fff;
+  color: #333;
+  border-radius: 18px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 14px 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%);
+  margin-bottom: -44px;
+}
+
+.modal-close-bar .close-btn {
+  background: rgba(255,255,255,0.25);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.modal-close-bar .close-btn:hover { background: rgba(255,255,255,0.45); }
+
+.recipe-hero {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(135deg, #e85d3a, #f08060);
+}
+
+.recipe-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.recipe-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 24px;
+}
+
+.recipe-hero-overlay h2 {
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  margin-bottom: 4px;
+}
+
+.recipe-hero-overlay .hero-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+}
+
+.modal-body { padding: 20px 24px 28px; }
+
+.modal-body .section { margin-bottom: 22px; }
+.modal-body .section:last-child { margin-bottom: 0; }
+
+.modal-body .section h4 {
+  font-size: 16px;
+  color: #e85d3a;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recipe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.recipe-meta-pill {
+  background: #fff5f2;
+  color: #e85d3a;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  border: 1px solid #fdd9cf;
+}
+
+.ingredient-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  background: #fef9f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.ingredient-grid-row {
+  display: contents;
+}
+
+.ingredient-grid-row .ing-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.ingredient-grid-row .ing-amount {
+  font-size: 13px;
+  color: #888;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.step-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.step-card {
+  background: #fafafa;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.step-card-body {
+  padding: 14px 16px 16px;
+}
+
+.step-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  background: #e85d3a;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-card-header h5 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.step-card-text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #555;
+  padding-left: 38px;
+}
+
+.step-tip {
+  margin-top: 10px;
+  margin-left: 38px;
+  background: #fff5f2;
+  border-left: 3px solid #e85d3a;
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  color: #b8543a;
+  line-height: 1.6;
+}
+
+.step-tip::before {
+  content: '💡 ';
+}
+
+.modal::-webkit-scrollbar { width: 6px; }
+.modal::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+.modal::-webkit-scrollbar-track { background: transparent; }
+
+/* ===== Responsive ===== */
+@media (max-width: 500px) {
+  .header { padding: 36px 16px 6px; }
+  .header h1 { font-size: 34px; }
+  .card-stage { max-width: 320px; padding: 0 16px 40px; }
+  .card-front .mystery-emoji { font-size: 60px; }
+  .card-front.revealed .mystery-text { font-size: 26px; }
+  .card-back { padding: 16px; }
+  .card-back .recipe-item { padding: 10px; }
+  .card-back .recipe-item .recipe-name { font-size: 13px; }
+  .modal { max-width: 100%; border-radius: 14px; }
+  .recipe-hero { height: 160px; border-radius: 14px 14px 0 0; }
+  .recipe-hero-overlay { padding: 16px 18px; }
+  .recipe-hero-overlay h2 { font-size: 20px; }
+  .modal-body { padding: 16px 18px 22px; }
+  .step-card-text, .step-tip { padding-left: 0; margin-left: 0; }
+  .step-card-header { margin-bottom: 6px; }
+  .disclaimer-float {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+  .qrcode-float {
+    right: 12px;
+    bottom: 12px;
+    padding: 8px;
+  }
+  .qrcode-float img {
+    width: 80px;
+    height: 80px;
+  }
+  .qrcode-float span { font-size: 10px; margin-top: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="header">
+  <h1>下顿吃什么</h1>
+  <p class="subtitle">别在外面吃了，一个人的生活也需要烟火气</p>
+</div>
+
+<div class="dice-area">
+  <button class="btn-dice" id="btnDice" onclick="rollDice()">🎲</button>
+  <div class="roll-counter" id="rollCounter"></div>
+  <span class="roll-text" id="rollText"></span>
+</div>
+
+<div class="card-stage" id="cardStage"></div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="disclaimer-float">
+  本网站负责帮你做选择，教程为AI生成，若有不完善或错误步骤请自己在网上找教程哦！<br>
+  更多趣味内容请关注公众号：AIdeaHub<br>
+  聚AI灵感，趣味随心览
+</div>
+
+<div class="qrcode-float">
+  <img src="data:image/jpeg;base64,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" alt="AIdeaHub 公众号二维码">
+  <span>扫码关注公众号</span>
+</div>
+
+<script>
+// ===== 图片工具 =====
+// 图片已改用纯 CSS 渐变背景，不再依赖外部 CDN，国内访问无压力
+	function imgUrl() { return ''; }
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function hideBrokenImage(el) {
+  el.style.display = 'none';
+  const wrap = el.closest('.step-card');
+  if (wrap) {
+    const img = wrap.querySelector('.step-card-image');
+    if (img && img === el) img.remove();
+  }
+}
+
+// ===== 食谱规范化 =====
+function normalizeRecipe(raw) {
+  function normalizeStep(s, idx) {
+    if (typeof s === 'object') {
+      return { title: s.title, text: s.text, tip: s.tip || '' };
+    }
+    return { title: '步骤 ' + (idx + 1), text: s, tip: '' };
+  }
+  if (raw.steps && raw.steps.length && typeof raw.steps[0] === 'object') {
+    return {
+      name: raw.name,
+      cover: raw.cover || '',
+      meta: raw.meta || { time: '', difficulty: '', servings: '' },
+      ingredients: raw.ingredients.map(function(i) {
+        return typeof i === 'string' ? { name: i, amount: '' } : i;
+      }),
+      steps: raw.steps.map(normalizeStep)
+    };
+  }
+  return {
+    name: raw.name,
+    cover: raw.cover || '',
+    meta: raw.meta || { time: '', difficulty: '', servings: '' },
+    ingredients: raw.ingredients.map(function(i) {
+      return typeof i === 'string' ? { name: i, amount: '' } : i;
+    }),
+    steps: raw.steps.map(normalizeStep)
+  };
+}
+
+// ===== 食谱数据库 =====
+const recipeDB = {
+  鸡蛋: [
+    {
+      name: '番茄炒蛋',
+      cover: imgUrl('1598867153618-1edb29163824', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '鸡蛋', amount: '3个' },
+        { name: '番茄', amount: '2个（约300g）' },
+        { name: '葱', amount: '2根' },
+        { name: '盐', amount: '1/2茶匙' },
+        { name: '糖', amount: '1/2茶匙' },
+        { name: '食用油', amount: '2 tbsp（约30ml）' }
+      ],
+      steps: [
+        {
+          title: '准备食材',
+          text: '鸡蛋打入干净碗中，加 1/4 茶匙盐，用筷子顺同一方向搅打 30～40 秒，直到蛋液颜色均匀、表面起细泡。番茄洗净去蒂，在顶部划十字，若皮较厚可快速烫皮后去皮，再切成约 2cm 的滚刀小块。葱洗净切葱花，葱白葱绿可分开备用。',
+          tip: '选熟透、偏软的番茄更容易出汁；若番茄偏硬，切好后可加 pinch 盐稍腌 2 分钟帮助出汁。'
+        },
+        {
+          title: '滑炒鸡蛋',
+          text: '炒锅烧空至微微冒烟，倒 1.5 tbsp 食用油，晃动锅子润锅。油温约七成热时（手离锅面 10cm 能感到明显热气），倒入全部蛋液。保持中大火，用筷子或铲子从外向内快速划散，见底部蛋液凝固、整体呈嫩黄色块状时立刻关火盛出，整个过程约 20～30 秒，不要炒至发干。',
+          tip: '蛋液里加 1 tbsp 温水或牛奶，炒出来更蓬松；鸡蛋要先盛出，避免后续炒番茄时过老。'
+        },
+        {
+          title: '炒番茄出汁',
+          text: '同一口锅不必洗，留底油即可；若不足则补 0.5 tbsp 油。倒入番茄块，转中火翻炒 2～3 分钟，期间用铲背轻压番茄帮助出汁。看到番茄变软、锅中有明显红色汤汁、酸香飘出时，加 1/2 茶匙糖，继续翻 10 秒让糖融化。',
+          tip: '糖的作用是中和番茄酸度并提鲜，这一步是家常番茄炒蛋风味的关键。'
+        },
+        {
+          title: '合炒出锅',
+          text: '倒回之前炒好的鸡蛋，用铲子轻轻翻匀，让每块鸡蛋都裹上番茄汁。尝一下咸淡，通常再补 1/4 茶匙盐即可。撒入葱花，开大火快速翻 10～15 秒，看到汁水略收、香气浓郁后立即装盘。宜热吃，不宜久焖。',
+          tip: '若喜欢带汤汁拌饭，可在合炒时加 2 tbsp 热水，不要加太多以免鸡蛋吸水变柴。'
+        }
+      ]
+    },
+    {
+      name: '蒸水蛋',
+      cover: imgUrl('1626645737656-790332c64dfe', 800),
+      meta: { time: '20分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '鸡蛋', amount: '3个' },
+        { name: '温水', amount: '约450ml（1.5倍蛋液量）' },
+        { name: '盐', amount: '1/4茶匙' },
+        { name: '生抽', amount: '1 tsp' },
+        { name: '香油', amount: '几滴' },
+        { name: '葱', amount: '1根' }
+      ],
+      steps: [
+        {
+          title: '调制蛋液',
+          text: '选稍深的蒸碗或耐热碗，打入 3 个鸡蛋。加 1/4 茶匙盐，用筷子搅打 1 分钟，直到蛋清蛋黄完全融合、没有明显蛋白条。量一下蛋液体积，按 1:1.5 比例准备 40～45℃ 的温水（约 450ml），缓缓倒入蛋液中，边倒边搅，最后应呈均匀淡黄色液体。',
+          tip: '温水而非冷水，能减少蒸制时产生蜂窝气孔；水温不宜过高，以免把鸡蛋烫成蛋花。'
+        },
+        {
+          title: '过滤去泡',
+          text: '在蒸碗上架细滤网，将蛋液过滤 1～2 遍，滤掉未打散的蛋白和大气泡。若表面仍有小泡，用勺背轻轻撇去。盖上保鲜膜，用牙签在膜上扎 5～6 个小孔，便于蒸汽均匀进入。',
+          tip: '过滤是蒸出「镜面蛋羹」的关键步骤，不可省略。'
+        },
+        {
+          title: '隔水蒸制',
+          text: '蒸锅加足量水，大火烧开后放入蒸碗。转中小火（保持水面微沸即可），计时蒸 10～12 分钟。打开保鲜膜，插入筷子或竹签，拔出时没有带液体、蛋羹表面完全凝固即表示熟了。',
+          tip: '大火会让蛋羹起孔、表面凹凸不平；中小火才能蒸出细腻口感。'
+        },
+        {
+          title: '调味点缀',
+          text: '取出蒸碗，在表面淋 1 tsp 生抽和 2～3 滴香油。撒葱花，可用勺子在蛋羹表面轻划菱形网格，方便酱汁渗入。趁热食用，口感最嫩滑。',
+          tip: '若喜欢更鲜，可改用蒸鱼豉油代替部分生抽。'
+        }
+      ]
+    },
+    {
+      name: '蛋炒饭',
+      cover: imgUrl('1603133872878-684f208fb274', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '鸡蛋', amount: '2个' },
+        { name: '隔夜米饭', amount: '1大碗（约300g）' },
+        { name: '葱', amount: '2根' },
+        { name: '盐', amount: '1/2茶匙' },
+        { name: '食用油', amount: '2 tbsp' },
+        { name: '胡萝卜', amount: '半根' },
+        { name: '青豆', amount: '50g' }
+      ],
+      steps: [
+        {
+          title: '备料处理',
+          text: '鸡蛋 2 个打散，加 pinch 盐搅匀。葱切细葱花；胡萝卜去皮切 0.5cm 小丁；青豆若用冷冻的，开水焯 1 分钟沥干。隔夜米饭提前从冰箱取出，用手或勺子轻轻拨散，尽量让每粒饭分开，若有大块可用手捏散。',
+          tip: '隔夜饭水分少、淀粉老化，是蛋炒饭粒粒分明的秘诀；现煮米饭需完全冷却且略干。'
+        },
+        {
+          title: '炒散鸡蛋',
+          text: '炒锅烧空至冒烟，倒 1 tbsp 油润锅。七成热时倒入蛋液，中大火快速划散，见蛋液刚凝固成碎块、颜色嫩黄时立刻盛出，不要炒老。',
+          tip: '鸡蛋单独炒好盛出，最后回锅只需 30 秒，保持嫩滑。'
+        },
+        {
+          title: '炒散米饭',
+          text: '同一口锅补 1 tbsp 油，倒入米饭，用铲子背面从外向内压散。保持中火翻炒约 2 分钟，直到米饭粒粒分开、部分米粒微微金黄、锅中有明显锅气。',
+          tip: '若米饭仍偏湿，可多炒 1 分钟蒸发水汽；全程不要盖盖。'
+        },
+        {
+          title: '合炒调味',
+          text: '加入胡萝卜丁、青豆翻炒 1 分钟。倒回鸡蛋块，加 1/2 茶匙盐，转大火快速翻 30 秒，让配料均匀分布。撒葱花，再翻 10 秒即可装盘。',
+          tip: '盐最后放或分次放，便于控制咸度；喜欢可加 pinch 白胡椒粉提香。'
+        }
+      ]
+    },
+    {
+      name: '紫菜蛋花汤',
+      cover: imgUrl('1547592166-23ac45744acd', 800),
+      meta: { time: '10分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '鸡蛋', amount: '2个' },
+        { name: '紫菜', amount: '1小把（约5g）' },
+        { name: '葱', amount: '1根' },
+        { name: '盐', amount: '1/2茶匙' },
+        { name: '香油', amount: '几滴' },
+        { name: '白胡椒粉', amount: '少许' }
+      ],
+      steps: [
+        {
+          title: '准备材料',
+          text: '紫菜撕成约 2cm 小片，用温水泡 30 秒后捞出，轻轻挤干。鸡蛋打入碗中搅散；葱切细葱花。准备 600ml 清水，方便后续一次倒足量。',
+          tip: '紫菜不宜久泡，否则软烂失去口感；泡后检查一下有无沙粒。'
+        },
+        {
+          title: '煮紫菜',
+          text: '汤锅加 600ml 水，大火烧开后放入紫菜，煮 1 分钟至完全展开、汤色微绿。此时可尝一下汤底咸度，为后续加盐做参考。',
+          tip: '水要一次加够，中途不要反复加水，否则汤味变淡。'
+        },
+        {
+          title: '淋蛋成花',
+          text: '转最小火或关火，将蛋液沿筷子或勺背缓缓淋入汤中，形成细流。淋完后静置 3 秒，再用筷子从外向内轻轻划散，形成均匀蛋花。蛋花刚凝固、颜色嫩黄即可，不要久煮。',
+          tip: '火一定要小，否则蛋花会冲散成碎沫或变老发硬。'
+        },
+        {
+          title: '调味出锅',
+          text: '加 1/2 茶匙盐和少许白胡椒粉，搅匀尝味。关火后滴 2～3 滴香油，撒葱花，轻轻搅动即可盛碗。成品应汤清、蛋花均匀、紫菜软而不烂。',
+          tip: '香油最后放，高温久煮会损失香气。'
+        }
+      ]
+    }
+  ],
+  土豆: [
+    {
+      name: "酸辣土豆丝",
+      cover: imgUrl('1518977677102-7e4799172108', 800),
+      meta: { time: "20分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "土豆", amount: "2个（约400g）" },
+        { name: "干辣椒", amount: "5～6个" },
+        { name: "花椒", amount: "1 tsp" },
+        { name: "醋", amount: "2 tbsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "葱", amount: "1根" }
+      ],
+      steps: [
+        {
+          title: "切丝泡洗",
+          text: "土豆去皮，切约2mm厚片再切细丝。立刻入清水浸泡10分钟，换水2～3次至水清，捞出充分沥干。表面水分越少，炒出来越脆。",
+          tip: "切好后尽快泡水，避免氧化变色。"
+        },
+        {
+          title: "准备香料",
+          text: "蒜切薄片；干辣椒剪2cm段；葱切段。醋提前量好放灶边，最后沿锅边淋入才最香。",
+          tip: "酸辣土豆丝讲究快炒，所有料先备好再开火。"
+        },
+        {
+          title: "炝锅",
+          text: "锅烧空至冒烟，倒2 tbsp油，六成热下花椒粒小火炸10～15秒至麻香，捞出花椒。转中大火，下蒜片、干辣椒爆香5秒。"
+        },
+        {
+          title: "快炒调味",
+          text: "倒土豆丝大火快炒1～2分钟，至半透明仍挺括。沿锅边淋2 tbsp醋，加1/2 tsp盐，翻20～30秒。撒葱段，再翻两下出锅。",
+          tip: "全程大火，时间过长会出水变软。"
+        }
+      ]
+    },
+    {
+      name: "土豆炖牛肉",
+      cover: imgUrl('1551788856-4fca0e9e8902', 800),
+      meta: { time: "90分钟", difficulty: "中等", servings: "3-4人份" },
+      ingredients: [
+        { name: "牛肉", amount: "500g（牛腩）" },
+        { name: "土豆", amount: "2个" },
+        { name: "胡萝卜", amount: "1根" },
+        { name: "洋葱", amount: "半个" },
+        { name: "姜", amount: "4片" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "老抽", amount: "1 tbsp" },
+        { name: "盐", amount: "1 tsp" },
+        { name: "八角", amount: "2颗" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "食用油", amount: "2 tbsp" }
+      ],
+      steps: [
+        {
+          title: "牛肉焯水",
+          text: "牛肉切3～4cm块，冷水下锅加2片姜、1 tbsp料酒。大火沸后撇沫，煮3分钟，捞出温水冲净。",
+          tip: "冷水下锅才能充分逼出血水和腥味。"
+        },
+        {
+          title: "切配蔬菜",
+          text: "土豆、胡萝卜去皮切滚刀块；洋葱切大块。所有材料沥干水分。"
+        },
+        {
+          title: "炒香牛肉",
+          text: "热锅2 tbsp油，下姜片、八角炒香，倒牛肉中火翻炒3～4分钟至表面微焦。加生抽、老抽快速上色。"
+        },
+        {
+          title: "慢火炖煮",
+          text: "加足量热水没过牛肉约2cm，大火沸后转最小火盖盖炖1小时，至筷子能轻松扎透。",
+          tip: "炖肉必须加热水，加冷水会使肉质发柴。"
+        },
+        {
+          title: "加入蔬菜",
+          text: "放土豆、胡萝卜、洋葱，继续炖20～25分钟至软烂。尝味加约1 tsp盐，大火收汁2～3分钟。",
+          tip: "土豆后放，避免过早炖化。"
+        }
+      ]
+    },
+    {
+      name: "孜然土豆块",
+      cover: imgUrl('1573081495226-4f4fbb5b978e', 800),
+      meta: { time: "25分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "土豆", amount: "2个" },
+        { name: "孜然粉", amount: "1 tsp" },
+        { name: "辣椒粉", amount: "1/2 tsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "食用油", amount: "3 tbsp" },
+        { name: "葱花", amount: "适量" }
+      ],
+      steps: [
+        {
+          title: "切块浸泡",
+          text: "土豆去皮切3cm滚刀块，清水泡10分钟去淀粉，捞出沥干。"
+        },
+        {
+          title: "煮至半熟",
+          text: "开水下土豆煮3分钟，至筷子能插入但中心仍有硬度，捞出吸干。",
+          tip: "先煮后煎，外焦里嫩且省时。"
+        },
+        {
+          title: "煎到金黄",
+          text: "平底锅中火倒3 tbsp油，铺入土豆块，每面煎2～3分钟至金黄微焦，再翻面煎匀各面。"
+        },
+        {
+          title: "撒料出锅",
+          text: "倒出多余油，撒孜然粉、辣椒粉、盐，快速翻匀。撒葱花，翻10秒装盘。",
+          tip: "香料最后放，避免高温发苦。"
+        }
+      ]
+    }
+  ],
+  鸡胸肉: [
+    {
+      name: "宫保鸡丁",
+      cover: imgUrl('1604908177667-9f843ebd0e6d', 800),
+      meta: { time: "25分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "鸡胸肉", amount: "300g" },
+        { name: "花生米", amount: "50g" },
+        { name: "干辣椒", amount: "8～10个" },
+        { name: "花椒", amount: "1 tsp" },
+        { name: "葱", amount: "2根" },
+        { name: "姜", amount: "3片" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "醋", amount: "1 tbsp" },
+        { name: "糖", amount: "1 tbsp" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "盐", amount: "1/4 tsp" },
+        { name: "食用油", amount: "3 tbsp" }
+      ],
+      steps: [
+        {
+          title: "腌鸡丁",
+          text: "鸡胸肉切1.5cm见方丁，加1 tbsp料酒、1/4 tsp盐、1 tsp淀粉抓匀，腌15分钟。葱姜蒜切小粒；干辣椒剪段。",
+          tip: "鸡丁大小一致，受热才均匀。"
+        },
+        {
+          title: "炒花生米",
+          text: "冷锅冷油下花生米，小火不断翻炒至微黄、有噼啪声，盛出备用。"
+        },
+        {
+          title: "调碗汁",
+          text: "碗中混合：生抽2 tbsp、醋1 tbsp、糖1 tbsp、淀粉1 tsp、清水2 tbsp，搅匀。"
+        },
+        {
+          title: "滑炒鸡丁",
+          text: "热锅2 tbsp油，六成热下鸡丁快速滑散，变白即盛出，约1分钟。"
+        },
+        {
+          title: "合炒出锅",
+          text: "留底油，下花椒、干辣椒、姜蒜爆香。倒回鸡丁，淋碗汁大火快炒30秒裹匀。撒葱粒、花生米翻匀出锅。",
+          tip: "碗汁要提前调好，下锅后快速翻匀避免糊底。"
+        }
+      ]
+    },
+    {
+      name: "香煎鸡胸肉",
+      cover: imgUrl('1604908177667-9f843ebd0e6d', 800),
+      meta: { time: "40分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "鸡胸肉", amount: "2块（约300g）" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "黑胡椒", amount: "1/4 tsp" },
+        { name: "生抽", amount: "1 tbsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "蒜", amount: "2瓣" },
+        { name: "食用油", amount: "1 tbsp" }
+      ],
+      steps: [
+        {
+          title: "处理鸡肉",
+          text: "鸡胸从中间片成约1.5cm厚两片，用刀背轻轻拍松纤维。蒜切细末备用。",
+          tip: "拍松后更易入味，煎制不易外焦里生。"
+        },
+        {
+          title: "腌制",
+          text: "加1/2 tsp盐、黑胡椒、生抽、料酒、蒜末，抓匀腌30分钟，冷藏更佳。"
+        },
+        {
+          title: "煎制",
+          text: "平底锅中火倒1 tbsp油，油热放鸡胸肉，不要移动。煎3～4分钟至底面金黄，翻面再煎3～4分钟。"
+        },
+        {
+          title: "静置切片",
+          text: "用筷子扎最厚处，流出清汁无血水即熟。取出静置2分钟再切，锁住肉汁。",
+          tip: "静置很重要，立刻切会流失汁水。"
+        }
+      ]
+    },
+    {
+      name: "凉拌鸡丝",
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: "25分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "鸡胸肉", amount: "1块（250g）" },
+        { name: "黄瓜", amount: "1根" },
+        { name: "姜", amount: "2片" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "醋", amount: "1 tbsp" },
+        { name: "辣椒油", amount: "1 tbsp" },
+        { name: "芝麻油", amount: "1/2 tbsp" },
+        { name: "盐", amount: "1/4 tsp" },
+        { name: "糖", amount: "1/4 tsp" },
+        { name: "香菜", amount: "少许" }
+      ],
+      steps: [
+        {
+          title: "煮鸡胸肉",
+          text: "鸡胸肉冷水下锅，加2片姜、1 tbsp料酒。水沸后转中小火煮10～12分钟，至筷子扎入无血水。",
+          tip: "煮后不要立刻撕丝，先放凉更整齐。"
+        },
+        {
+          title: "撕丝切配",
+          text: "鸡胸肉放凉后顺纹理撕成细丝；黄瓜切细丝；蒜剁末；香菜切段。"
+        },
+        {
+          title: "调酱汁",
+          text: "碗中混合：蒜末、生抽2 tbsp、醋1 tbsp、辣椒油1 tbsp、芝麻油半勺、盐糖各1/4 tsp。"
+        },
+        {
+          title: "拌匀装盘",
+          text: "鸡丝、黄瓜丝入碗，淋酱汁充分拌匀，撒香菜即可。冷藏10分钟更入味。"
+        }
+      ]
+    }
+  ],
+  猪肉: [
+    {
+      name: '红烧肉',
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: '90分钟', difficulty: '中等', servings: '3-4人份' },
+      ingredients: [
+        { name: '五花肉', amount: '500g' },
+        { name: '冰糖', amount: '30g' },
+        { name: '姜', amount: '4片' },
+        { name: '葱', amount: '2根' },
+        { name: '生抽', amount: '2 tbsp' },
+        { name: '老抽', amount: '1 tbsp' },
+        { name: '料酒', amount: '2 tbsp' },
+        { name: '八角', amount: '2颗' },
+        { name: '桂皮', amount: '1小块' },
+        { name: '香叶', amount: '2片' }
+      ],
+      steps: [
+        {
+          title: '焯水去腥',
+          text: '五花肉切 3cm 见方大块，大小尽量均匀。冷水下锅，加 2 片姜、1 tbsp 料酒，大火煮沸后及时撇去浮沫，继续煮 3 分钟。捞出用温水冲净表面杂质，沥干水分备用。',
+          tip: '一定要冷水下锅，才能充分逼出肉里的血水和腥味；温水冲洗可避免肉遇冷收缩。'
+        },
+        {
+          title: '炒糖色',
+          text: '厚底锅放 1 tbsp 油，小火下 30g 冰糖，用铲子不停推动，约 2 分钟至冰糖完全融化、颜色呈透亮琥珀色。立刻倒入五花肉块，转中火快速翻炒 2～3 分钟，让每块肉均匀裹上糖色、表面微焦。',
+          tip: '糖色过深会发苦；若怕掌握不好，可改用少油+冰糖直接下肉，靠后续老抽上色。'
+        },
+        {
+          title: '加料炖煮',
+          text: '下剩余姜片、葱段、八角、桂皮、香叶，炒出香料味。沿锅边淋 2 tbsp 料酒，再加 2 tbsp 生抽、1 tbsp 老抽翻匀。倒入足量热水，水量需没过肉约 2cm。大火烧开后转最小火，盖盖炖 1～1.5 小时。',
+          tip: '炖肉必须加热水；中途如需补水，也要加沸水，不能加冷水。'
+        },
+        {
+          title: '收汁出锅',
+          text: '用筷子插入肉块最厚处，能轻松扎透且无明显阻力即表示软烂。尝味后补约 1/4 tsp 盐（视酱油咸度调整）。开大火 uncovered 收汁 3～5 分钟，不断轻推翻动，至汤汁浓稠红亮、包裹肉块即可装盘。',
+          tip: '最后收汁时要看着锅，防止底部糊锅；留少许浓汁拌饭极佳。'
+        }
+      ]
+    },
+    {
+      name: '鱼香肉丝',
+      cover: imgUrl('1563245372-f2172fc36bdf', 800),
+      meta: { time: '25分钟', difficulty: '中等', servings: '2-3人份' },
+      ingredients: [
+        { name: '猪里脊肉', amount: '250g' },
+        { name: '木耳', amount: '50g' },
+        { name: '胡萝卜', amount: '半根' },
+        { name: '青椒', amount: '1个' },
+        { name: '葱', amount: '2根' },
+        { name: '姜', amount: '3片' },
+        { name: '蒜', amount: '3瓣' },
+        { name: '豆瓣酱', amount: '1 tbsp' },
+        { name: '生抽', amount: '2 tbsp' },
+        { name: '醋', amount: '1.5 tbsp' },
+        { name: '糖', amount: '1 tbsp' },
+        { name: '淀粉', amount: '1 tsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '盐', amount: '1/4 tsp' },
+        { name: '食用油', amount: '3 tbsp' }
+      ],
+      steps: [
+        {
+          title: '腌肉切丝',
+          text: '猪里脊先片成 0.3cm 厚片，再切 0.3cm 细丝，尽量粗细一致。加 1 tbsp 料酒、1/4 tsp 盐、1 tsp 淀粉，用手抓匀至有黏性，腌 15 分钟。干木耳提前温水泡发 30 分钟，去蒂切丝；胡萝卜、青椒切同粗细细丝；葱切寸段，姜蒜切细末。',
+          tip: '肉丝切得均匀、腌到位，滑炒时才不容易老柴。'
+        },
+        {
+          title: '调鱼香汁',
+          text: '取一小碗，依次放入：生抽 2 tbsp、香醋 1.5 tbsp、白糖 1 tbsp、淀粉 1 tsp、清水 3 tbsp，用筷子搅至淀粉完全溶解。可先尝一下，应呈酸甜平衡、略偏咸鲜。',
+          tip: '鱼香味的核心是「酸甜咸」三角平衡；醋和糖可按口味微调。'
+        },
+        {
+          title: '滑炒肉丝',
+          text: '炒锅烧空至冒烟，倒 2 tbsp 油，六成热时倒入肉丝，用筷子快速拨散。见肉丝变白、刚断生即立刻盛出，全程约 40～60 秒，不可久炒。',
+          tip: '肉丝滑炒过老会影响整道菜口感，宁可稍嫩也不要炒柴。'
+        },
+        {
+          title: '鱼香合炒',
+          text: '留底油，下 1 tbsp 豆瓣酱小火炒 30 秒至红油析出。加姜蒜末、一半葱段爆香，下胡萝卜丝、木耳丝、青椒丝中火翻炒 1 分钟至断生。倒回肉丝，淋鱼香汁，大火快速翻 30 秒，让汁均匀裹在食材上。撒剩余葱段，翻匀出锅。',
+          tip: '鱼香汁下锅后要快速翻匀，避免淀粉糊底。'
+        }
+      ]
+    },
+    {
+      name: '糖醋里脊',
+      cover: imgUrl('1529193591184-1d155a687fd8', 800),
+      meta: { time: '35分钟', difficulty: '中等', servings: '2-3人份' },
+      ingredients: [
+        { name: '猪里脊肉', amount: '300g' },
+        { name: '鸡蛋', amount: '1个' },
+        { name: '面粉', amount: '3 tbsp' },
+        { name: '番茄酱', amount: '3 tbsp' },
+        { name: '醋', amount: '2 tbsp' },
+        { name: '糖', amount: '2 tbsp' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '食用油', amount: '适量（炸制用）' },
+        { name: '白芝麻', amount: '1 tsp' }
+      ],
+      steps: [
+        {
+          title: '切条腌制',
+          text: '里脊肉先片成 1cm 厚片，再切 0.8cm 宽、5cm 长条。加 1/2 tsp 盐、1 tbsp 料酒，抓匀腌 15 分钟。鸡蛋 1 个与 3 tbsp 面粉调成可流动稠糊，稠度以能均匀挂在肉条上为宜。',
+          tip: '肉条大小一致，炸制时受热更均匀。'
+        },
+        {
+          title: '裹糊炸制',
+          text: '炸锅倒足量油，六成热（约 160℃，插入筷子周围冒小泡）时，肉条均匀裹糊后逐条下锅，中火炸至定型、浅黄捞出。油温升至八成热（约 190℃），倒入全部肉条复炸 30 秒至金黄酥脆，捞出沥油。',
+          tip: '复炸是外酥里嫩的关键；第一次炸定型，第二次炸脆壳。'
+        },
+        {
+          title: '调糖醋汁',
+          text: '另起锅倒少量底油，下 3 tbsp 番茄酱小火炒 15 秒出香。加 2 tbsp 醋、2 tbsp 糖、2 tbsp 清水，搅拌至冒泡，小火煮 1～2 分钟至汤汁明显变稠，能挂在铲子上。',
+          tip: '番茄酱先炒一下，成品颜色更红、酸香更柔和。'
+        },
+        {
+          title: '裹汁出锅',
+          text: '倒入炸好的里脊，大火快速翻炒 20～30 秒，让每根肉条均匀裹上糖醋汁。撒 1 tsp 白芝麻，翻匀后立即装盘。趁热食用，外酥内嫩口感最佳。',
+          tip: '裹汁动作要快，避免肉条在汁里泡软。'
+        }
+      ]
+    },
+    {
+      name: '回锅肉',
+      cover: imgUrl('1563245372-f2172fc36bdf', 800),
+      meta: { time: '40分钟', difficulty: '中等', servings: '2-3人份' },
+      ingredients: [
+        { name: '猪五花肉', amount: '400g' },
+        { name: '蒜苗', amount: '3根' },
+        { name: '豆瓣酱', amount: '1.5 tbsp' },
+        { name: '甜面酱', amount: '1 tsp' },
+        { name: '豆豉', amount: '1 tsp' },
+        { name: '姜', amount: '3片' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '盐', amount: '少许' },
+        { name: '食用油', amount: '1 tbsp' }
+      ],
+      steps: [
+        {
+          title: '煮肉定型',
+          text: '五花肉整块（约 400g）冷水下锅，加 3 片姜、1 tbsp 料酒，大火煮沸后撇沫，转中小火煮 20 分钟至八分熟——筷子能插入但略有阻力。捞出放在案板上，完全晾凉后再切。',
+          tip: '肉必须完全冷却后再切，否则热肉易碎、薄片切不匀。'
+        },
+        {
+          title: '切片备料',
+          text: '晾凉的肉切 0.2cm 薄片，尽量切大而薄。蒜苗切 3cm 斜段，蒜白和蒜叶分开。豆瓣酱 1.5 tbsp 放在案板上剁细，便于炒出红油。',
+          tip: '回锅肉讲究「薄而不碎」，刀工越均匀越好。'
+        },
+        {
+          title: '煸出灯盏窝',
+          text: '热锅 1 tbsp 油，下肉片中火煸炒 3～4 分钟，不要频繁翻动，待一面定型后再翻。炒至肉片卷曲、肥肉部分透明、边缘微焦呈「灯盏窝」状，逼出部分猪油。',
+          tip: '火不宜过大，中火慢煸才能出香而不糊。'
+        },
+        {
+          title: '调味出锅',
+          text: '将肉推到锅边，锅心下豆瓣酱、甜面酱、豆豉，小火炒 30 秒至红油析出。把肉拨回，先下蒜白翻炒 30 秒，再下蒜叶炒至断生。尝味后补少许盐（豆瓣通常够咸），翻匀即可出锅。',
+          tip: '蒜白先炒、蒜叶后放，可保持蒜苗清脆和层次。'
+        }
+      ]
+    }
+  ],
+  番茄: [
+    {
+      name: '番茄炒蛋',
+      cover: imgUrl('1598867153618-1edb29163824', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '番茄', amount: '2个（约300g）' },
+        { name: '鸡蛋', amount: '3个' },
+        { name: '葱', amount: '2根' },
+        { name: '盐', amount: '1/2茶匙' },
+        { name: '糖', amount: '1/2茶匙' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        {
+          title: '处理番茄与鸡蛋',
+          text: '番茄洗净去蒂，切成约 2cm 滚刀小块，不宜过碎。鸡蛋 3 个打入碗中，加 1/4 tsp 盐，顺一个方向搅打 30 秒至均匀起泡。葱洗净切细葱花备用。',
+          tip: '番茄块稍大，炒后仍能保留部分形状；过熟番茄更易出汁。'
+        },
+        {
+          title: '先炒蛋',
+          text: '锅烧空至微微冒烟，倒 1.5 tbsp 油，七成热时倒入蛋液。中大火用筷子快速划散，见蛋液刚凝固成嫩黄块状时立刻盛出，全程约 20～30 秒。',
+          tip: '鸡蛋先盛出，避免在后续步骤中变老。'
+        },
+        {
+          title: '炒番茄',
+          text: '同一口锅补 0.5 tbsp 油，下番茄块中火翻炒 2～3 分钟，用铲背轻压帮助出汁。见番茄变软、汤汁变红、酸香明显时，加 1/2 tsp 糖翻匀。',
+          tip: '糖可中和番茄酸度，使成品更柔和。'
+        },
+        {
+          title: '合炒出锅',
+          text: '倒回鸡蛋块，轻轻翻匀，让鸡蛋裹上番茄汁。尝味后补约 1/4 tsp 盐，撒葱花，大火翻 10～15 秒即可。成品应汁浓蛋嫩、酸甜适口。',
+          tip: '若喜欢带汤汁拌饭，可加 2 tbsp 热水，不要久煮。'
+        }
+      ]
+    },
+    {
+      name: '番茄牛腩',
+      cover: imgUrl('1551788856-4fca0e9e8902', 800),
+      meta: { time: '2小时', difficulty: '中等', servings: '3-4人份' },
+      ingredients: [
+        { name: '番茄', amount: '3个（约450g）' },
+        { name: '牛腩', amount: '500g' },
+        { name: '土豆', amount: '1个' },
+        { name: '洋葱', amount: '半个' },
+        { name: '姜', amount: '4片' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '番茄酱', amount: '2 tbsp' },
+        { name: '盐', amount: '1 tsp' },
+        { name: '糖', amount: '1 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        {
+          title: '牛腩预处理',
+          text: '牛腩选带筋部位，切 3cm 方块。冷水下锅，加 2 片姜、1 tbsp 料酒，大火煮沸后撇去浮沫，继续煮 3 分钟。捞出用温水冲净，沥干水分。',
+          tip: '带筋牛腩长时间炖煮后更软糯；冷水焯水去腥更彻底。'
+        },
+        {
+          title: '炒番茄底',
+          text: '3 个番茄中 2 个切大块、1 个切小丁；洋葱切块。热锅 2 tbsp 油，下洋葱、姜片中火炒 1 分钟至透明。加大块番茄，中火翻炒 3～4 分钟，用铲背压出汁水。加 2 tbsp 番茄酱继续炒 1 分钟，至底汤浓稠、颜色红亮。',
+          tip: '番茄酱可增强颜色和番茄风味，但不宜过多以免盖过自然番茄味。'
+        },
+        {
+          title: '慢炖牛腩',
+          text: '倒入牛腩块，与番茄底翻匀 2 分钟。加足量热水没过食材约 2cm，大火烧开后转最小火，盖盖炖 1.5 小时。期间偶尔查看水位，必要时补热水。',
+          tip: '炖牛腩必须加热水；中途补水也要用沸水。'
+        },
+        {
+          title: '加土豆收尾',
+          text: '土豆去皮切滚刀块。待牛腩能用筷子轻松扎透时，放入土豆块和之前切的小丁番茄，继续小火炖 20 分钟，至土豆粉糯、牛腩软烂。加 1 tsp 盐、1 tsp 糖调味，开大火略收汁 2 分钟，汤汁稍浓即可。',
+          tip: '土豆后放，避免过早炖化；糖可平衡番茄酸度。'
+        }
+      ]
+    },
+    {
+      name: '番茄蛋汤',
+      cover: imgUrl('1547592166-23ac45744acd', 800),
+      meta: { time: '12分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '番茄', amount: '2个' },
+        { name: '鸡蛋', amount: '2个' },
+        { name: '葱', amount: '1根' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '香油', amount: '几滴' },
+        { name: '食用油', amount: '1 tbsp' }
+      ],
+      steps: [
+        {
+          title: '备料',
+          text: '番茄 2 个洗净去蒂，切成约 2cm 小块。鸡蛋 2 个打入碗中搅散；葱切细葱花。量好 600ml 清水备用。',
+          tip: '番茄块不要过小，否则长时间煮容易完全化掉。'
+        },
+        {
+          title: '炒番茄',
+          text: '汤锅或炒锅热 1 tbsp 油，下番茄块中火翻炒 2～3 分钟，用铲背轻压，至番茄出汁、变软、颜色变深。这一步决定汤底的鲜度和颜色。',
+          tip: '先炒后煮，比直接水煮番茄更香，汤色也更红。'
+        },
+        {
+          title: '煮汤淋蛋',
+          text: '倒入 600ml 清水，大火烧开后转中火煮 2 分钟。转小火，将蛋液沿筷子或勺背缓缓淋入，形成细流。淋完后静置 3 秒，再用筷子轻轻划散，形成均匀蛋花。',
+          tip: '淋蛋液时火要小，否则蛋花会冲散变老。'
+        },
+        {
+          title: '调味出锅',
+          text: '加 1/2 tsp 盐，搅匀尝味。关火后滴 2～3 滴香油，撒葱花，轻搅即可盛碗。成品应汤色清亮、番茄味足、蛋花嫩滑。',
+          tip: '香油最后放，保留香气；盐不宜过早大量加入。'
+        }
+      ]
+    }
+  ],
+  豆腐: [
+    {
+      name: "麻婆豆腐",
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: "20分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "嫩豆腐", amount: "1盒（约400g）" },
+        { name: "猪肉末", amount: "80g" },
+        { name: "豆瓣酱", amount: "1.5 tbsp" },
+        { name: "花椒粉", amount: "1/2 tsp" },
+        { name: "辣椒面", amount: "1 tsp" },
+        { name: "豆豉", amount: "1 tsp" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "葱", amount: "1根" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "盐", amount: "少许" }
+      ],
+      steps: [
+        {
+          title: "处理豆腐",
+          text: "嫩豆腐切2cm方块。蒜切末，葱切花备用。锅中烧开水加1/2 tsp盐，下豆腐块焯1分钟去豆腥，捞出沥干。",
+          tip: "焯水后豆腐更韧，不易碎。"
+        },
+        {
+          title: "炒肉末",
+          text: "热锅2 tbsp油，下肉末中火炒至变色、微微发干出香。"
+        },
+        {
+          title: "炒出红油",
+          text: "加豆瓣酱、豆豉、辣椒面、蒜末，小火炒1分钟至红油析出、香气浓郁。"
+        },
+        {
+          title: "烧豆腐",
+          text: "加约200ml热水烧开，轻轻滑入豆腐块，不要大力翻动。中火煮3～5分钟入味。"
+        },
+        {
+          title: "勾芡出锅",
+          text: "1 tsp淀粉加2 tbsp水调芡，沿锅边淋入，轻推锅使汤汁包裹豆腐。撒花椒粉和葱花即可。",
+          tip: "勾芡时火可略大，汤汁稍浓即可，不宜过厚。"
+        }
+      ]
+    },
+    {
+      name: "家常豆腐",
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: "25分钟", difficulty: "简单", servings: "2-3人份" },
+      ingredients: [
+        { name: "老豆腐", amount: "1块（400g）" },
+        { name: "青椒", amount: "1个" },
+        { name: "红椒", amount: "半个" },
+        { name: "木耳", amount: "50g" },
+        { name: "葱", amount: "1根" },
+        { name: "姜", amount: "2片" },
+        { name: "蒜", amount: "2瓣" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "食用油", amount: "3 tbsp" },
+        { name: "淀粉", amount: "1 tsp" }
+      ],
+      steps: [
+        {
+          title: "切配",
+          text: "老豆腐切1cm厚片；青红椒切菱形片；木耳泡发撕小朵；葱姜蒜切末。"
+        },
+        {
+          title: "煎豆腐",
+          text: "平底锅倒2 tbsp油，中火将豆腐片煎至两面金黄，盛出。",
+          tip: "煎时不要频繁翻动，等一面定型再翻面。"
+        },
+        {
+          title: "炒配料",
+          text: "留底油，下葱姜蒜末爆香，加青红椒、木耳翻炒1分钟。"
+        },
+        {
+          title: "焖煮入味",
+          text: "倒回豆腐，加2 tbsp生抽和3 tbsp水，盖盖焖2分钟。"
+        },
+        {
+          title: "勾芡出锅",
+          text: "淀粉1 tsp加水调芡淋入，加1/2 tsp盐轻推匀，撒葱末，汤汁微浓即可。"
+        }
+      ]
+    },
+    {
+      name: "小葱拌豆腐",
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: "10分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "嫩豆腐", amount: "1块（300g）" },
+        { name: "小葱", amount: "3～4根" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "香油", amount: "1 tsp" }
+      ],
+      steps: [
+        {
+          title: "烫豆腐",
+          text: "嫩豆腐整块入盘，浇刚烧开的开水烫1分钟，倒掉水分。",
+          tip: "烫一下可去豆腥，口感更细。"
+        },
+        {
+          title: "加料拌匀",
+          text: "小葱切极细葱花撒在豆腐上，加1/2 tsp盐、1 tsp香油。"
+        },
+        {
+          title: "捣碎上桌",
+          text: "用勺背将豆腐轻轻捣碎，与葱花、盐、香油拌匀即可。口感应清爽、豆香明显。"
+        }
+      ]
+    }
+  ],
+  牛肉: [
+    {
+      name: "土豆炖牛肉",
+      cover: imgUrl('1551788856-4fca0e9e8902', 800),
+      meta: { time: "90分钟", difficulty: "中等", servings: "3-4人份" },
+      ingredients: [
+        { name: "牛肉", amount: "500g" },
+        { name: "土豆", amount: "2个" },
+        { name: "胡萝卜", amount: "1根" },
+        { name: "洋葱", amount: "半个" },
+        { name: "姜", amount: "4片" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "老抽", amount: "1 tbsp" },
+        { name: "盐", amount: "1 tsp" },
+        { name: "八角", amount: "2颗" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "食用油", amount: "2 tbsp" }
+      ],
+      steps: [
+        {
+          title: "牛肉焯水",
+          text: "牛肉切3cm块，冷水下锅加2片姜、1 tbsp料酒，沸后撇沫煮3分钟，洗净。"
+        },
+        {
+          title: "切配",
+          text: "土豆、胡萝卜切滚刀块；洋葱切块。"
+        },
+        {
+          title: "炒香",
+          text: "热锅2 tbsp油，下姜片、八角、牛肉中火翻炒3分钟，加生抽老抽上色。"
+        },
+        {
+          title: "炖煮",
+          text: "加热水没过牛肉，大火沸后转小火炖1小时。",
+          tip: "务必加热水，避免肉质发柴。"
+        },
+        {
+          title: "收尾",
+          text: "加土豆、胡萝卜、洋葱炖20～25分钟，加盐，大火略收汁。"
+        }
+      ]
+    },
+    {
+      name: "黑椒牛柳",
+      cover: imgUrl('1546833999-b9f581a1996d', 800),
+      meta: { time: "20分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "牛里脊", amount: "300g" },
+        { name: "洋葱", amount: "半个" },
+        { name: "青椒", amount: "1个" },
+        { name: "红椒", amount: "半个" },
+        { name: "黑胡椒粉", amount: "1 tsp" },
+        { name: "生抽", amount: "1 tbsp" },
+        { name: "蚝油", amount: "1 tbsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "食用油", amount: "3 tbsp" },
+        { name: "蒜", amount: "2瓣" }
+      ],
+      steps: [
+        {
+          title: "腌牛柳",
+          text: "牛里脊切粗条，加料酒、生抽、淀粉、1 tsp油抓匀腌20分钟。",
+          tip: "加少量油封住水分，滑炒更嫩。"
+        },
+        {
+          title: "切配",
+          text: "洋葱、青红椒切细丝；蒜切片。"
+        },
+        {
+          title: "滑炒牛柳",
+          text: "热锅多油至七成热，下牛柳快速滑散，变色即捞出，约40秒。"
+        },
+        {
+          title: "合炒出锅",
+          text: "留底油，下蒜片、洋葱炒香，加青红椒炒30秒。倒回牛柳，加蚝油、黑胡椒粉大火翻20秒出锅。",
+          tip: "牛柳不可久炒，否则变老。"
+        }
+      ]
+    },
+    {
+      name: "水煮牛肉",
+      cover: imgUrl('1546833999-b9f581a1996d', 800),
+      meta: { time: "30分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "牛肉", amount: "300g" },
+        { name: "豆芽", amount: "150g" },
+        { name: "白菜", amount: "100g" },
+        { name: "干辣椒", amount: "10个" },
+        { name: "花椒", amount: "1 tbsp" },
+        { name: "豆瓣酱", amount: "2 tbsp" },
+        { name: "姜", amount: "3片" },
+        { name: "蒜", amount: "4瓣" },
+        { name: "生抽", amount: "1 tbsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "食用油", amount: "4 tbsp" },
+        { name: "盐", amount: "1/2 tsp" }
+      ],
+      steps: [
+        {
+          title: "腌片备料",
+          text: "牛肉切薄片，加1 tbsp料酒、1 tbsp生抽、1 tsp淀粉、1 tsp油抓匀腌20分钟。姜切薄片，蒜切末（约1/3留最后泼油用）。豆芽、白菜洗净沥干。"
+        },
+        {
+          title: "炒底料",
+          text: "热锅2 tbsp油，下豆瓣酱、大部分姜蒜末小火炒出红油，加约500ml水、1/2 tsp盐烧开。"
+        },
+        {
+          title: "烫蔬菜",
+          text: "下豆芽、白菜烫熟，捞出铺在大碗底。"
+        },
+        {
+          title: "煮牛肉",
+          text: "汤再次沸腾，下牛肉片分散滑入，煮1～2分钟至变色即熟。连汤带肉倒入碗中。"
+        },
+        {
+          title: "泼油",
+          text: "碗面撒预留的蒜末、花椒、干辣椒段。另起锅烧2 tbsp热油至冒烟，浇在香料上激香。",
+          tip: "油温要够高，才能爆出麻辣香气。"
+        }
+      ]
+    }
+  ],
+  鱼: [
+    {
+      name: "清蒸鱼",
+      cover: imgUrl('1534043464124-5be1fe566722', 800),
+      meta: { time: "25分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "鲈鱼", amount: "1条（约500g）" },
+        { name: "姜", amount: "1大块" },
+        { name: "葱", amount: "2根" },
+        { name: "蒸鱼豉油", amount: "2 tbsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "盐", amount: "少许" }
+      ],
+      steps: [
+        {
+          title: "处理鱼身",
+          text: "鱼去鳞去内脏洗净，两面各划3刀深至鱼骨。抹少许盐、1 tbsp料酒，腌10分钟。"
+        },
+        {
+          title: "摆盘",
+          text: "姜一部分切片铺盘底，一部分切丝；葱切段铺底、切段放鱼身。鱼身也放几片姜。"
+        },
+        {
+          title: "蒸制",
+          text: "水开后上锅，大火蒸8～10分钟（约500g鱼）。关火焖2分钟。",
+          tip: "时间按鱼大小调整：每增加200g约加2分钟。"
+        },
+        {
+          title: "淋油出锅",
+          text: "倒掉盘中腥水，去掉蒸过的姜葱。铺新鲜姜丝葱丝，淋2 tbsp蒸鱼豉油，烧2 tbsp热油浇在葱姜上即可。"
+        }
+      ]
+    },
+    {
+      name: "红烧鱼",
+      cover: imgUrl('1534043464124-5be1fe566722', 800),
+      meta: { time: "30分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "鱼", amount: "1条（约600g）" },
+        { name: "姜", amount: "4片" },
+        { name: "蒜", amount: "4瓣" },
+        { name: "葱", amount: "2根" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "老抽", amount: "1 tsp" },
+        { name: "料酒", amount: "2 tbsp" },
+        { name: "糖", amount: "1 tsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "食用油", amount: "3 tbsp" }
+      ],
+      steps: [
+        {
+          title: "准备",
+          text: "鱼处理干净两面划刀，用厨房纸内外擦干。姜切片，蒜切瓣，葱切葱段和葱花分开备用。"
+        },
+        {
+          title: "煎鱼",
+          text: "热锅3 tbsp油，将鱼从盘中移入，中小火两面各煎3～4分钟至金黄，盛出。"
+        },
+        {
+          title: "烧鱼",
+          text: "留底油，下姜蒜爆香。加1 tbsp料酒、2 tbsp生抽、1 tsp老抽、1 tsp糖，倒热水没过鱼身一半，大火沸后转中火烧10分钟，中途翻面一次。"
+        },
+        {
+          title: "收汁",
+          text: "尝味补1/2 tsp盐，大火收汁至汤汁浓稠，撒葱花出锅。",
+          tip: "煎鱼时不要急于翻动，等一面定型再翻面。"
+        }
+      ]
+    },
+    {
+      name: "糖醋鱼块",
+      cover: imgUrl('1534043464124-5be1fe566722', 800),
+      meta: { time: "35分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "鱼柳", amount: "400g" },
+        { name: "番茄酱", amount: "3 tbsp" },
+        { name: "醋", amount: "2 tbsp" },
+        { name: "糖", amount: "2 tbsp" },
+        { name: "鸡蛋", amount: "1个" },
+        { name: "面粉", amount: "3 tbsp" },
+        { name: "姜", amount: "3片" },
+        { name: "葱", amount: "1根" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "食用油", amount: "适量" }
+      ],
+      steps: [
+        {
+          title: "腌鱼块",
+          text: "鱼柳切3cm块，加1/2 tsp盐、1 tbsp料酒、姜片腌15分钟，沥干。"
+        },
+        {
+          title: "裹糊炸制",
+          text: "鸡蛋与面粉调糊，鱼块均匀裹上。六成热油炸至浅黄捞出，八成热复炸30秒至金黄酥脆。",
+          tip: "复炸能让外皮更脆。"
+        },
+        {
+          title: "调糖醋汁",
+          text: "另起锅少油，下3 tbsp番茄酱、2 tbsp醋、2 tbsp糖、3 tbsp水，小火煮至冒泡变稠。"
+        },
+        {
+          title: "裹汁出锅",
+          text: "倒入鱼块快速翻匀，让每块裹上酱汁，撒葱花。趁热食用。"
+        }
+      ]
+    }
+  ],
+  茄子: [
+    {
+      name: "鱼香茄子",
+      cover: imgUrl('1551881249-78a4592b0e5b', 800),
+      meta: { time: "25分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "茄子", amount: "2根（约400g）" },
+        { name: "猪肉末", amount: "80g" },
+        { name: "葱", amount: "1根" },
+        { name: "姜", amount: "2片" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "豆瓣酱", amount: "1 tbsp" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "醋", amount: "1 tbsp" },
+        { name: "糖", amount: "1 tbsp" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "食用油", amount: "4 tbsp" }
+      ],
+      steps: [
+        {
+          title: "处理茄子",
+          text: "茄子切长条，加1/2 tsp盐抓匀腌10分钟，挤出水分。葱切花，姜蒜切末备用。",
+          tip: "盐腌后挤水，茄子不易吸油。"
+        },
+        {
+          title: "调鱼香汁",
+          text: "碗中混合：生抽2 tbsp、醋1 tbsp、糖1 tbsp、淀粉1 tsp、水3 tbsp。"
+        },
+        {
+          title: "煎茄子",
+          text: "热锅4 tbsp油，下茄子条中火煎至微黄变软，盛出。"
+        },
+        {
+          title: "合炒",
+          text: "留底油，下肉末炒变色，加豆瓣酱、姜蒜末炒香。倒回茄子，淋鱼香汁大火翻30秒，撒葱花。"
+        }
+      ]
+    },
+    {
+      name: "蒜蓉蒸茄子",
+      cover: imgUrl('1551881249-78a4592b0e5b', 800),
+      meta: { time: "20分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "茄子", amount: "2根" },
+        { name: "蒜", amount: "1头" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "香油", amount: "1 tsp" },
+        { name: "盐", amount: "1/4 tsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "小米辣", amount: "2个" }
+      ],
+      steps: [
+        {
+          title: "处理茄子",
+          text: "茄子切5cm段，对半切开，表面划几刀方便入味。蒜剁蓉；小米辣切圈。"
+        },
+        {
+          title: "炒金蒜",
+          text: "热锅2 tbsp油，下一半蒜蓉小火炒至金黄。"
+        },
+        {
+          title: "调蒜蓉酱",
+          text: "生蒜与熟金蒜混合，加2 tbsp生抽、1/4 tsp盐。"
+        },
+        {
+          title: "蒸制",
+          text: "酱均匀铺在茄子表面，水开后大火蒸10分钟至软烂。"
+        },
+        {
+          title: "出锅",
+          text: "取出淋1 tsp香油，可撒小米辣圈点缀。"
+        }
+      ]
+    },
+    {
+      name: "地三鲜",
+      cover: imgUrl('1551881249-78a4592b0e5b', 800),
+      meta: { time: "35分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "茄子", amount: "1根" },
+        { name: "土豆", amount: "1个" },
+        { name: "青椒", amount: "1个" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "糖", amount: "1/2 tsp" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "食用油", amount: "5 tbsp" }
+      ],
+      steps: [
+        {
+          title: "切配",
+          text: "茄子切滚刀块，盐腌10分钟挤水；土豆切滚刀块；青椒切块；蒜切片。"
+        },
+        {
+          title: "分别过油",
+          text: "热锅多油，先下土豆煎至金黄，再下茄子煎软，分别盛出。",
+          tip: "土豆和茄子分开煎，成熟度更好控制。"
+        },
+        {
+          title: "合炒",
+          text: "留底油，下蒜片、青椒炒香。倒回土豆、茄子，加生抽、盐、糖翻匀。"
+        },
+        {
+          title: "勾芡",
+          text: "淀粉1 tsp加水调芡淋入，轻推至汤汁微浓即可。"
+        }
+      ]
+    }
+  ],
+  白菜: [
+    {
+      name: "醋溜白菜",
+      cover: imgUrl('1565299624942-b3ea128cda57', 800),
+      meta: { time: "15分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "大白菜", amount: "半颗（约400g）" },
+        { name: "干辣椒", amount: "4～5个" },
+        { name: "醋", amount: "2 tbsp" },
+        { name: "生抽", amount: "1 tbsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "糖", amount: "1/2 tsp" },
+        { name: "淀粉", amount: "1 tsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "蒜", amount: "2瓣" }
+      ],
+      steps: [
+        {
+          title: "处理白菜",
+          text: "白菜帮和叶分开：帮斜刀切3mm片，叶撕成块。干辣椒剪段，蒜切片。"
+        },
+        {
+          title: "调碗汁",
+          text: "碗中混合：醋2 tbsp、生抽1 tbsp、糖1/2 tsp、盐1/2 tsp、淀粉1 tsp、水2 tbsp。"
+        },
+        {
+          title: "炝锅快炒",
+          text: "热锅2 tbsp油，下干辣椒、蒜片爆香。先下白菜帮大火炒1分钟至变软，再下叶炒30秒。"
+        },
+        {
+          title: "出锅",
+          text: "淋碗汁，大火快速翻20秒裹匀即可。应酸香爽脆、略带微甜。",
+          tip: "醋沿锅边淋入更香。"
+        }
+      ]
+    },
+    {
+      name: "白菜炖粉条",
+      cover: imgUrl('1565299624942-b3ea128cda57', 800),
+      meta: { time: "35分钟", difficulty: "简单", servings: "3-4人份" },
+      ingredients: [
+        { name: "大白菜", amount: "半颗" },
+        { name: "红薯粉条", amount: "1把（80g）" },
+        { name: "五花肉", amount: "150g" },
+        { name: "姜", amount: "3片" },
+        { name: "葱", amount: "1根" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "盐", amount: "1 tsp" },
+        { name: "食用油", amount: "1 tbsp" }
+      ],
+      steps: [
+        {
+          title: "泡粉切菜",
+          text: "粉条温水泡30分钟至软；白菜切大块；五花肉切薄片；葱切葱段，留部分葱花最后撒。"
+        },
+        {
+          title: "煸肉",
+          text: "热锅1 tbsp油，下五花肉中火煸至出油、边缘微黄。"
+        },
+        {
+          title: "炒白菜",
+          text: "下姜片、葱段、2 tbsp生抽，倒白菜翻炒至稍软出水。"
+        },
+        {
+          title: "炖煮",
+          text: "加热水没过食材，放泡软粉条，中火炖10～15分钟至粉条透明。"
+        },
+        {
+          title: "调味",
+          text: "加约1 tsp盐，撒预留的葱花，再炖2分钟即可。"
+        }
+      ]
+    },
+    {
+      name: "酸辣白菜",
+      cover: imgUrl('1565299624942-b3ea128cda57', 800),
+      meta: { time: "15分钟", difficulty: "简单", servings: "2人份" },
+      ingredients: [
+        { name: "大白菜", amount: "半颗" },
+        { name: "干辣椒", amount: "5个" },
+        { name: "花椒", amount: "1 tsp" },
+        { name: "醋", amount: "2 tbsp" },
+        { name: "生抽", amount: "1 tbsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "糖", amount: "1/2 tsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "蒜", amount: "2瓣" },
+        { name: "姜", amount: "2片" }
+      ],
+      steps: [
+        {
+          title: "备料",
+          text: "白菜帮切片、叶撕块；干辣椒剪段；蒜姜切片。"
+        },
+        {
+          title: "炝锅",
+          text: "热锅2 tbsp油，下花椒炸香捞出，再下干辣椒、姜蒜片爆香。"
+        },
+        {
+          title: "快炒",
+          text: "先下白菜帮大火炒至微透明，再下叶炒至出水变软。"
+        },
+        {
+          title: "调味",
+          text: "加醋2 tbsp、生抽1 tbsp、糖和盐，大火快炒30秒出锅。",
+          tip: "全程大火，保持爽脆口感。"
+        }
+      ]
+    }
+  ],
+  虾: [
+    {
+      name: "白灼虾",
+      cover: imgUrl('1565680016434-ddff5ebaa0d8', 800),
+      meta: { time: "15分钟", difficulty: "简单", servings: "2-3人份" },
+      ingredients: [
+        { name: "鲜虾", amount: "500g" },
+        { name: "姜", amount: "1块" },
+        { name: "葱", amount: "2根" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "醋", amount: "1/2 tbsp" },
+        { name: "蒜", amount: "3瓣" },
+        { name: "香油", amount: "几滴" }
+      ],
+      steps: [
+        {
+          title: "处理虾",
+          text: "虾剪须去虾线，洗净沥干。"
+        },
+        {
+          title: "煮虾",
+          text: "锅中加足量水，放姜片、葱段、1 tbsp料酒，大火烧开。下虾煮2～3分钟，至变红弯曲。",
+          tip: "水要足够多，虾才能均匀受热。"
+        },
+        {
+          title: "过冷",
+          text: "立即捞出浸入冰水或冷水中30秒，使虾肉紧致弹牙。"
+        },
+        {
+          title: "调蘸汁",
+          text: "姜蒜切极细末，加2 tbsp生抽、1/2 tbsp醋、几滴香油。虾沥干摆盘，配蘸汁。"
+        }
+      ]
+    },
+    {
+      name: "油焖大虾",
+      cover: imgUrl('1565680016434-ddff5ebaa0d8', 800),
+      meta: { time: "20分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "大虾", amount: "500g" },
+        { name: "姜", amount: "4片" },
+        { name: "蒜", amount: "4瓣" },
+        { name: "葱", amount: "2根" },
+        { name: "番茄酱", amount: "1 tbsp" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "糖", amount: "1 tsp" },
+        { name: "盐", amount: "1/4 tsp" },
+        { name: "食用油", amount: "3 tbsp" }
+      ],
+      steps: [
+        {
+          title: "处理虾",
+          text: "大虾剪须、开背去虾线，洗净擦干。姜蒜切片，葱切段。"
+        },
+        {
+          title: "煎虾",
+          text: "热锅3 tbsp油，下姜蒜爆香。放虾两面各煎1～2分钟至变红。"
+        },
+        {
+          title: "焖煮",
+          text: "加1 tbsp料酒、2 tbsp生抽、1 tbsp番茄酱、1 tsp糖、1/4 tsp盐和3 tbsp水，盖盖焖3～4分钟。"
+        },
+        {
+          title: "收汁",
+          text: "开盖大火收汁至汤汁浓稠包裹虾身，撒葱段出锅。"
+        }
+      ]
+    },
+    {
+      name: "蒜蓉粉丝蒸虾",
+      cover: imgUrl('1565680016434-ddff5ebaa0d8', 800),
+      meta: { time: "25分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "虾", amount: "10～12只" },
+        { name: "粉丝", amount: "1把" },
+        { name: "蒜", amount: "1头" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "蚝油", amount: "1 tbsp" },
+        { name: "盐", amount: "1/4 tsp" },
+        { name: "食用油", amount: "2 tbsp" },
+        { name: "葱", amount: "1根" }
+      ],
+      steps: [
+        {
+          title: "备料",
+          text: "粉丝温水泡20分钟剪段；虾开背去虾线。蒜剁蓉。"
+        },
+        {
+          title: "炒金蒜",
+          text: "热锅加1 tbsp油，下一半蒜蓉小火不断翻动，炒至金黄出香，与另一半生蒜混合。"
+        },
+        {
+          title: "调酱摆盘",
+          text: "蒜蓉加2 tbsp生抽、1 tbsp蚝油、1/4 tsp盐。盘底铺粉丝，摆虾，每只虾背铺蒜蓉酱。"
+        },
+        {
+          title: "蒸制",
+          text: "水开后大火蒸6～8分钟，至虾变红、粉丝透明。"
+        },
+        {
+          title: "激香",
+          text: "撒葱花，淋1 tbsp热油即可。",
+          tip: "蒸时间不宜过长，否则虾肉发老。"
+        }
+      ]
+    }
+  ],
+  排骨: [
+    {
+      name: "糖醋排骨",
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: "50分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "猪小排", amount: "500g" },
+        { name: "冰糖", amount: "30g" },
+        { name: "醋", amount: "3 tbsp" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "老抽", amount: "1 tsp" },
+        { name: "料酒", amount: "2 tbsp" },
+        { name: "姜", amount: "3片" },
+        { name: "食用油", amount: "1 tbsp" },
+        { name: "白芝麻", amount: "1 tsp" }
+      ],
+      steps: [
+        {
+          title: "焯水",
+          text: "小排切寸段，冷水下锅加姜片、1 tbsp料酒，大火煮沸后撇去浮沫，煮3分钟捞出，用温水冲净表面杂质。",
+          tip: "焯水可去腥并减少血沫，让成品汤色更清。"
+        },
+        {
+          title: "炒糖色",
+          text: "炒锅放1 tbsp油，小火下30g冰糖，不停搅拌约2分钟至融化呈琥珀色。立刻倒入排骨快速翻炒，让每块均匀裹上糖色。",
+          tip: "糖色过深会发苦，见琥珀色即可下肉。"
+        },
+        {
+          title: "炖煮",
+          text: "沿锅边淋2 tbsp料酒，加2 tbsp生抽、1 tsp老抽、2 tbsp醋和没过排骨约2cm的热水。大火烧开后转最小火，盖盖炖30～40分钟，至排骨软烂脱骨。"
+        },
+        {
+          title: "收汁出锅",
+          text: "尝味后按需补醋和糖调节酸甜度。开大火收汁，不断翻动，至汤汁浓稠包裹每块排骨。撒白芝麻，趁热装盘。",
+          tip: "收汁阶段要盯着锅，避免糊底。"
+        }
+      ]
+    },
+    {
+      name: "红烧排骨",
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: "60分钟", difficulty: "中等", servings: "3-4人份" },
+      ingredients: [
+        { name: "猪小排", amount: "600g" },
+        { name: "姜", amount: "4片" },
+        { name: "葱", amount: "2根" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "老抽", amount: "1 tbsp" },
+        { name: "料酒", amount: "2 tbsp" },
+        { name: "冰糖", amount: "20g" },
+        { name: "八角", amount: "2颗" },
+        { name: "桂皮", amount: "1小块" },
+        { name: "盐", amount: "1 tsp" },
+        { name: "食用油", amount: "1 tbsp" }
+      ],
+      steps: [
+        {
+          title: "焯水",
+          text: "排骨切寸段，冷水下锅加2片姜、1 tbsp料酒，大火沸后撇沫煮3分钟，捞出洗净。"
+        },
+        {
+          title: "炒糖色",
+          text: "热锅1 tbsp油，下20g冰糖小火炒至琥珀色，下排骨翻炒至表面微焦、均匀上色。"
+        },
+        {
+          title: "香料炖煮",
+          text: "加姜片、葱段、八角、桂皮，淋2 tbsp料酒、2 tbsp生抽、1 tbsp老抽，倒入没过排骨的热水。大火沸后转小火炖40分钟。",
+          tip: "炖排骨务必加热水，加冷水会使肉质发柴。"
+        },
+        {
+          title: "收汁调味",
+          text: "筷子能轻松插入即熟。加约1 tsp盐，开大火收汁至汤汁红亮浓稠，包裹排骨即可。"
+        }
+      ]
+    },
+    {
+      name: "蒜香排骨",
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: "90分钟", difficulty: "中等", servings: "2-3人份" },
+      ingredients: [
+        { name: "猪小排", amount: "500g" },
+        { name: "蒜", amount: "1头" },
+        { name: "生抽", amount: "2 tbsp" },
+        { name: "料酒", amount: "1 tbsp" },
+        { name: "蚝油", amount: "1 tbsp" },
+        { name: "蜂蜜", amount: "1 tbsp" },
+        { name: "盐", amount: "1/2 tsp" },
+        { name: "食用油", amount: "1 tbsp" }
+      ],
+      steps: [
+        {
+          title: "腌制入味",
+          text: "排骨加1 tbsp料酒、2 tbsp生抽、1 tbsp蚝油、1/2 tsp盐抓匀。蒜剁蓉，取一半与排骨拌匀，冷藏腌1小时。",
+          tip: "腌制时间够长，烤出来才更入味。"
+        },
+        {
+          title: "首次烤制",
+          text: "烤箱预热200℃。烤盘铺锡纸，刷1 tbsp油防粘，排骨均匀摆入，烤20分钟至表面变色、基本熟透。"
+        },
+        {
+          title: "刷蜜复烤",
+          text: "取出刷1 tbsp蜂蜜，撒剩余生蒜蓉，再烤5～10分钟至表面金黄微焦、蒜香明显。",
+          tip: "最后几分钟注意观察，避免烤糊。"
+        }
+      ]
+    },
+    {
+      name: "冬瓜排骨汤",
+      cover: imgUrl('1547592166-23ac45744acd', 800),
+      meta: { time: "90分钟", difficulty: "简单", servings: "3-4人份" },
+      ingredients: [
+        { name: "猪小排", amount: "400g" },
+        { name: "冬瓜", amount: "400g" },
+        { name: "姜", amount: "4片" },
+        { name: "盐", amount: "1 tsp" },
+        { name: "料酒", amount: "2 tbsp" },
+        { name: "枸杞", amount: "10g" },
+        { name: "葱", amount: "1根" }
+      ],
+      steps: [
+        {
+          title: "处理食材",
+          text: "排骨冷水下锅加姜、1 tbsp料酒，沸后撇沫捞出冲净。冬瓜去皮去瓤切3cm厚块；葱切段。"
+        },
+        {
+          title: "炖排骨",
+          text: "排骨入汤锅，加足量清水（约1.5L）、姜片、1 tbsp料酒，大火沸后转小火炖1小时，至排骨软烂。"
+        },
+        {
+          title: "加冬瓜",
+          text: "下冬瓜块，继续炖20～30分钟，至冬瓜透明、用勺可轻松划开。"
+        },
+        {
+          title: "调味出锅",
+          text: "加约1 tsp盐调味，出锅前放枸杞、撒葱花。汤应清亮不浊，排骨软烂脱骨。"
+        }
+      ]
+    }
+  ],
+  黄瓜: [
+    {
+      name: '拍黄瓜',
+      cover: imgUrl('1604974894693-ff741aa260ba', 800),
+      meta: { time: '10分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '黄瓜', amount: '2根（约400g）' },
+        { name: '蒜', amount: '4瓣' },
+        { name: '生抽', amount: '2 tbsp' },
+        { name: '醋', amount: '1.5 tbsp' },
+        { name: '香油', amount: '1 tsp' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '糖', amount: '1/4 tsp' },
+        { name: '辣椒油', amount: '1 tsp（可选）' }
+      ],
+      steps: [
+        { title: '处理黄瓜', text: '黄瓜洗净，切去两头。用刀背整根拍裂，再斜刀切成 3cm 小段。拍裂后更易入味，口感也更爽脆。', tip: '选用直溜、刺多的新鲜黄瓜，口感更脆。' },
+        { title: '腌制脱水', text: '黄瓜放入碗中，加 1/2 tsp 盐抓匀，静置 10 分钟。倒出渗出的水分，用厨房纸轻轻吸干。', tip: '这一步可去除多余水分，拌好后不会出水稀释味道。' },
+        { title: '调汁拌匀', text: '蒜捣成蓉，加 2 tbsp 生抽、1.5 tbsp 醋、1 tsp 香油、1/4 tsp 糖和 1 tsp 辣椒油（可选），搅匀。倒入黄瓜翻拌均匀，静置 5 分钟入味即可。', tip: '可先尝汁再微调酸甜咸度。' }
+      ]
+    },
+    {
+      name: '黄瓜炒蛋',
+      cover: imgUrl('1604974894693-ff741aa260ba', 800),
+      meta: { time: '12分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '黄瓜', amount: '1根' },
+        { name: '鸡蛋', amount: '3个' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '食用油', amount: '2 tbsp' },
+        { name: '葱', amount: '1根' }
+      ],
+      steps: [
+        { title: '备料', text: '黄瓜洗净，对半切开，用小勺刮去部分瓜瓤（可减少出水），切菱形片。鸡蛋加 pinch 盐打散；葱切葱花。', tip: '去部分瓜瓤后，炒出来更清爽不软烂。' },
+        { title: '炒鸡蛋', text: '热锅 1 tbsp 油，七成热倒入蛋液，快速划散成块，刚凝固即盛出。' },
+        { title: '炒黄瓜', text: '补 1 tbsp 油，下黄瓜片中火快炒 1 分钟至断生、仍保持脆感。' },
+        { title: '合炒出锅', text: '倒回鸡蛋，加 1/2 tsp 盐，大火翻 30 秒，撒葱花出锅。', tip: '黄瓜不宜久炒，保持一点脆度更好吃。' }
+      ]
+    },
+    {
+      name: '黄瓜拌木耳',
+      cover: imgUrl('1604974894693-ff741aa260ba', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '黄瓜', amount: '1根' },
+        { name: '木耳', amount: '50g（干）' },
+        { name: '蒜', amount: '3瓣' },
+        { name: '生抽', amount: '2 tbsp' },
+        { name: '醋', amount: '1 tbsp' },
+        { name: '香油', amount: '1 tsp' },
+        { name: '盐', amount: '1/4 tsp' }
+      ],
+      steps: [
+        { title: '泡发木耳', text: '干木耳温水泡发 30 分钟，去蒂洗净。入开水焯 2 分钟，捞出过凉，撕成小朵。', tip: '木耳焯过更易熟，口感也更爽脆。' },
+        { title: '切黄瓜', text: '黄瓜切细丝，加 1/4 tsp 盐稍抓匀，静置 5 分钟后挤去水分。' },
+        { title: '拌匀', text: '木耳、黄瓜丝入碗。蒜末、生抽、醋、香油混合淋在上面，翻拌均匀即可。', tip: '夏天可冷藏 10 分钟再食，更清爽。' }
+      ]
+    }
+  ],
+  香菇: [
+    {
+      name: '香菇滑鸡',
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: '25分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '鸡腿肉', amount: '300g' },
+        { name: '干香菇', amount: '8朵' },
+        { name: '姜', amount: '3片' },
+        { name: '生抽', amount: '2 tbsp' },
+        { name: '蚝油', amount: '1 tbsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '淀粉', amount: '1 tsp' },
+        { name: '食用油', amount: '2 tbsp' },
+        { name: '葱', amount: '1根' }
+      ],
+      steps: [
+        { title: '泡发香菇', text: '干香菇温水泡发 30 分钟，保留泡香菇水。香菇去蒂，片成厚片；泡香菇水过滤备用。', tip: '泡香菇的水很鲜，别倒掉，后面可代替部分清水。' },
+        { title: '腌鸡肉', text: '鸡腿肉去骨切小块，加 1 tbsp 料酒、1 tbsp 生抽、1 tsp 淀粉抓匀，腌 15 分钟。' },
+        { title: '滑炒', text: '热锅 2 tbsp 油，下姜片、鸡肉滑炒至变色，加香菇片翻炒 1 分钟。' },
+        { title: '焖煮出锅', text: '加 1 tbsp 蚝油、1 tbsp 生抽和约 100ml 泡香菇水，盖盖小火焖 5 分钟。开盖略收汁，撒葱花。', tip: '最后留少许汤汁，拌饭很香。' }
+      ]
+    },
+    {
+      name: '香菇油菜',
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: '12分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '鲜香菇', amount: '6朵' },
+        { name: '油菜', amount: '300g' },
+        { name: '蒜', amount: '3瓣' },
+        { name: '生抽', amount: '1 tbsp' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '备料', text: '香菇去蒂切厚片；油菜洗净，菜梗菜叶分开；蒜切片。' },
+        { title: '炒香菇', text: '热锅 2 tbsp 油，下蒜片、香菇片中火炒 2 分钟至变软出香。' },
+        { title: '炒油菜', text: '先下油菜梗翻炒 30 秒，再下菜叶，加 1 tbsp 生抽和 1/2 tsp 盐，大火快炒 1 分钟至断生。', tip: '菜梗先炒、菜叶后放，成熟度更一致。' }
+      ]
+    },
+    {
+      name: '香菇炖豆腐',
+      cover: imgUrl('1546064121-8669ea2c0540', 800),
+      meta: { time: '20分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '鲜香菇', amount: '5朵' },
+        { name: '北豆腐', amount: '1块（400g）' },
+        { name: '生抽', amount: '2 tbsp' },
+        { name: '蚝油', amount: '1 tbsp' },
+        { name: '姜', amount: '2片' },
+        { name: '葱', amount: '1根' },
+        { name: '食用油', amount: '1 tbsp' }
+      ],
+      steps: [
+        { title: '切配', text: '香菇切片；豆腐切 2cm 方块；姜切片，葱切段。' },
+        { title: '煎豆腐', text: '平底锅 1 tbsp 油，豆腐块煎至两面微黄，盛出。', tip: '煎过的豆腐不易碎，也更香。' },
+        { title: '炖煮', text: '锅中补少许油，下姜片、香菇炒香。加 200ml 水、1 tbsp 生抽、1 tbsp 蚝油，放入豆腐，中火煮 5 分钟。' },
+        { title: '收汁', text: '开盖略收汁，撒葱段即可。汤汁宜稍浓，方便豆腐入味。' }
+      ]
+    }
+  ],
+  面条: [
+    {
+      name: '西红柿鸡蛋面',
+      cover: imgUrl('1569718213724-fbd6729a4f66', 800),
+      meta: { time: '20分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '面条', amount: '200g' },
+        { name: '番茄', amount: '2个' },
+        { name: '鸡蛋', amount: '2个' },
+        { name: '葱', amount: '1根' },
+        { name: '盐', amount: '1 tsp' },
+        { name: '糖', amount: '1/2 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '备料', text: '番茄切小块；鸡蛋打散；葱切葱花。烧一锅水备用煮面。' },
+        { title: '炒番茄底', text: '热锅 2 tbsp 油，七成热倒蛋液炒成块盛出。补少许油，下番茄块中火炒 2 分钟出汁，加 1/2 tsp 糖和 600ml 水烧开。', tip: '番茄先炒再煮汤底，颜色更红、味道更浓。' },
+        { title: '煮面', text: '另起锅水开下面条，按包装说明煮至八成熟，捞出过凉水或直接捞入番茄汤中。' },
+        { title: '合拢出锅', text: '番茄汤中倒回鸡蛋，加 1 tsp 盐调味。放入面条煮 1 分钟，撒葱花即可。', tip: '面条不宜在汤里煮太久，以免糊汤。' }
+      ]
+    },
+    {
+      name: '葱油拌面',
+      cover: imgUrl('1569718213724-fbd6729a4f66', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '面条', amount: '200g' },
+        { name: '小葱', amount: '1把（约50g）' },
+        { name: '生抽', amount: '3 tbsp' },
+        { name: '老抽', amount: '1 tsp' },
+        { name: '糖', amount: '1 tsp' },
+        { name: '食用油', amount: '4 tbsp' }
+      ],
+      steps: [
+        { title: '熬葱油', text: '小葱切寸段，葱白葱绿分开。冷锅倒 4 tbsp 油，下葱白小火慢炸 3 分钟，再加葱绿炸 1 分钟至焦黄，捞出葱渣。', tip: '小火慢炸，才能出香而不苦。' },
+        { title: '调酱汁', text: '碗中混合 3 tbsp 生抽、1 tsp 老抽、1 tsp 糖，搅匀备用。' },
+        { title: '煮面拌匀', text: '水开下面条，煮至无白芯捞出，过凉水更 Q 弹。面条沥水后加酱汁和 2～3 tbsp 葱油，快速拌匀即可。', tip: '葱油一次可多熬，冷藏保存下次用。' }
+      ]
+    },
+    {
+      name: '炸酱面',
+      cover: imgUrl('1569718213724-fbd6729a4f66', 800),
+      meta: { time: '30分钟', difficulty: '中等', servings: '2-3人份' },
+      ingredients: [
+        { name: '面条', amount: '250g' },
+        { name: '猪肉末', amount: '200g' },
+        { name: '甜面酱', amount: '2 tbsp' },
+        { name: '黄豆酱', amount: '1 tbsp' },
+        { name: '黄瓜', amount: '半根' },
+        { name: '胡萝卜', amount: '半根' },
+        { name: '姜', amount: '2片' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '切码菜', text: '黄瓜、胡萝卜切细丝，作面码备用。姜切细末。' },
+        { title: '炒炸酱', text: '热锅 2 tbsp 油，下姜末、肉末中火炒至变色出油。加 2 tbsp 甜面酱、1 tbsp 黄豆酱，小火炒 5 分钟至酱色油亮。加 100ml 水，再焖 3 分钟至浓稠。', tip: '酱要小火慢炒，才香而不糊。' },
+        { title: '煮面组装', text: '水开煮面条至熟，捞出装碗。浇炸酱，放黄瓜丝、胡萝卜丝，拌匀食用。', tip: '传统还可加豆芽、青豆等作码菜。' }
+      ]
+    }
+  ],
+  玉米: [
+    {
+      name: '松仁玉米',
+      cover: imgUrl('1551754652-24380b09011f', 800),
+      meta: { time: '12分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '甜玉米粒', amount: '300g' },
+        { name: '松子', amount: '30g' },
+        { name: '胡萝卜', amount: '半根' },
+        { name: '青豆', amount: '50g' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '糖', amount: '1/2 tsp' },
+        { name: '食用油', amount: '1 tbsp' }
+      ],
+      steps: [
+        { title: '备料', text: '胡萝卜切 0.5cm 小丁。若用冷冻玉米粒、青豆，提前室温解冻。松子小火干锅焙 1 分钟至微黄。', tip: '松子易糊，焙时不停翻动。' },
+        { title: '焯水', text: '开水下玉米粒、胡萝卜丁、青豆焯 2 分钟，捞出沥干。' },
+        { title: '快炒出锅', text: '热锅 1 tbsp 油，下所有粒粒中火翻炒 1 分钟。加 1/2 tsp 盐、1/2 tsp 糖，翻匀。撒松子即可。', tip: '全程快炒，保持颗粒分明、颜色鲜艳。' }
+      ]
+    },
+    {
+      name: '玉米排骨汤',
+      cover: imgUrl('1551754652-24380b09011f', 800),
+      meta: { time: '90分钟', difficulty: '简单', servings: '3-4人份' },
+      ingredients: [
+        { name: '甜玉米', amount: '2根' },
+        { name: '猪排骨', amount: '400g' },
+        { name: '胡萝卜', amount: '1根' },
+        { name: '姜', amount: '4片' },
+        { name: '盐', amount: '1 tsp' },
+        { name: '料酒', amount: '1 tbsp' }
+      ],
+      steps: [
+        { title: '处理食材', text: '排骨切寸段，冷水下锅加2片姜、1 tbsp料酒，大火沸后撇沫煮3分钟，洗净。玉米切3cm段；胡萝卜切滚刀块。' },
+        { title: '炖汤', text: '排骨入汤锅，加足量清水（约1.5L）、姜片，大火沸后转小火炖 1 小时。' },
+        { title: '加玉米', text: '放入玉米、胡萝卜，继续炖 30 分钟，至排骨软烂、玉米甜香。' },
+        { title: '调味', text: '加约 1 tsp 盐，搅匀即可。汤应清甜味美。', tip: '盐最后放，汤更鲜。' }
+      ]
+    },
+    {
+      name: '椒盐玉米',
+      cover: imgUrl('1551754652-24380b09011f', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '甜玉米粒', amount: '300g' },
+        { name: '鸡蛋', amount: '1个' },
+        { name: '淀粉', amount: '3 tbsp' },
+        { name: '椒盐', amount: '1 tsp' },
+        { name: '食用油', amount: '适量（炸制用）' }
+      ],
+      steps: [
+        { title: '裹粉', text: '玉米粒沥水，加 1 个鸡蛋和 3 tbsp 淀粉，抓匀至每粒表面挂薄糊。', tip: '淀粉不宜过多，否则成坨。' },
+        { title: '炸制', text: '油温六成热（160℃）下玉米粒，分散下锅，炸至表面金黄酥脆，捞出沥油。' },
+        { title: '撒料', text: '趁热撒 1 tsp 椒盐，颠匀即可。可配辣椒粉增香。', tip: '炸好后尽快撒椒盐，热时更挂味。' }
+      ]
+    }
+  ],
+  羊肉: [
+    {
+      name: '葱爆羊肉',
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: '15分钟', difficulty: '中等', servings: '2-3人份' },
+      ingredients: [
+        { name: '羊里脊', amount: '300g' },
+        { name: '大葱', amount: '2根' },
+        { name: '生抽', amount: '1 tbsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '淀粉', amount: '1 tsp' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '食用油', amount: '3 tbsp' }
+      ],
+      steps: [
+        { title: '腌羊肉', text: '羊里脊切薄片，加 1 tbsp 料酒、1 tbsp 生抽、1 tsp 淀粉、1 tsp 油抓匀，腌 10 分钟。大葱切斜段，只取葱白部分。', tip: '羊肉逆纹切，口感更嫩。' },
+        { title: '滑炒', text: '热锅 3 tbsp 油，七成热下羊肉片快速滑散，变色即盛出，约 40 秒。' },
+        { title: '爆葱合炒', text: '留底油，下葱白大火爆 30 秒至微焦出香。倒回羊肉，加 1/2 tsp 盐，大火翻 20 秒出锅。', tip: '全程大火快炒，羊肉才嫩不膻。' }
+      ]
+    },
+    {
+      name: '萝卜炖羊肉',
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: '90分钟', difficulty: '中等', servings: '3-4人份' },
+      ingredients: [
+        { name: '羊腿肉', amount: '500g' },
+        { name: '白萝卜', amount: '1根（约400g）' },
+        { name: '姜', amount: '1块' },
+        { name: '葱', amount: '2根' },
+        { name: '料酒', amount: '2 tbsp' },
+        { name: '盐', amount: '1 tsp' },
+        { name: '白胡椒粉', amount: '少许' }
+      ],
+      steps: [
+        { title: '焯水', text: '羊肉切 3cm 块，冷水下锅，加 2 片姜、1 tbsp 料酒，沸后撇沫煮 5 分钟，捞出洗净。', tip: '冷水焯水可去膻味和血沫。' },
+        { title: '炖羊肉', text: '羊肉入汤锅，加足量热水、姜片、葱段、1 tbsp 料酒，大火沸后转小火炖 1 小时。' },
+        { title: '加萝卜', text: '白萝卜去皮切滚刀块，放入继续炖 30 分钟，至羊肉软烂、萝卜透明。' },
+        { title: '调味', text: '加 1 tsp 盐、少许白胡椒粉，撒葱花即可。', tip: '冬吃萝卜夏吃姜，萝卜能去膻增甜。' }
+      ]
+    },
+    {
+      name: '孜然羊肉',
+      cover: imgUrl('1544025162-d76694265947', 800),
+      meta: { time: '20分钟', difficulty: '中等', servings: '2-3人份' },
+      ingredients: [
+        { name: '羊里脊', amount: '300g' },
+        { name: '洋葱', amount: '半个' },
+        { name: '孜然粉', amount: '1 tsp' },
+        { name: '辣椒粉', amount: '1/2 tsp' },
+        { name: '生抽', amount: '1 tbsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '淀粉', amount: '1 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '腌肉', text: '羊肉切小片，加 1 tbsp 料酒、1 tbsp 生抽、1 tsp 淀粉抓匀，腌 15 分钟。洋葱切丝。' },
+        { title: '滑炒', text: '热锅 2 tbsp 油，七成热下羊肉快速滑炒至变色，盛出。' },
+        { title: '孜然合炒', text: '留底油，下洋葱丝炒 30 秒。倒回羊肉，加 1 tsp 孜然粉、1/2 tsp 辣椒粉，大火翻 30 秒出锅。', tip: '孜然最后放，香气更足。' }
+      ]
+    }
+  ],
+  西兰花: [
+    {
+      name: '蒜蓉西兰花',
+      cover: imgUrl('1540424280120-354124441237', 800),
+      meta: { time: '12分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '西兰花', amount: '1棵（约400g）' },
+        { name: '蒜', amount: '5瓣' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '处理西兰花', text: '西兰花切小朵，粗梗削皮切薄片。淡盐水中浸泡 10 分钟，冲洗沥干。', tip: '盐水泡可去除缝隙中的小虫和杂质。' },
+        { title: '焯水', text: '开水加 pinch 盐和几滴油，下西兰花焯 2 分钟至断生仍翠绿，捞出沥水。', tip: '水中加油盐，可保持颜色鲜艳。' },
+        { title: '炒蒜蓉', text: '热锅 2 tbsp 油，下蒜蓉小火炒 15 秒至香。倒西兰花，加 1/2 tsp 盐，大火翻 1 分钟出锅。' }
+      ]
+    },
+    {
+      name: '西兰花炒虾仁',
+      cover: imgUrl('1540424280120-354124441237', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '西兰花', amount: '300g' },
+        { name: '鲜虾仁', amount: '200g' },
+        { name: '蒜', amount: '2瓣' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '淀粉', amount: '1 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '备料', text: '西兰花切小朵焯水 2 分钟；虾仁加 1 tbsp 料酒、1 tsp 淀粉抓匀；蒜切片。' },
+        { title: '炒虾仁', text: '热锅 2 tbsp 油，下虾仁滑炒至变红卷曲，盛出。' },
+        { title: '合炒', text: '留底油，下蒜片、西兰花翻炒 1 分钟。倒回虾仁，加 1/2 tsp 盐，翻 30 秒出锅。', tip: '虾仁不可久炒，否则发老。' }
+      ]
+    },
+    {
+      name: '上汤西兰花',
+      cover: imgUrl('1540424280120-354124441237', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '西兰花', amount: '1棵' },
+        { name: '皮蛋', amount: '1个' },
+        { name: '咸鸭蛋', amount: '1个' },
+        { name: '蒜', amount: '2瓣' },
+        { name: '盐', amount: '1/4 tsp' },
+        { name: '食用油', amount: '1 tbsp' }
+      ],
+      steps: [
+        { title: '备料', text: '西兰花切小朵焯水 2 分钟，摆盘。皮蛋、咸鸭蛋切小块；蒜切片。' },
+        { title: '煮汤', text: '热锅 1 tbsp 油，下蒜片、蛋块小火炒 30 秒。加 300ml 热水烧开，煮 2 分钟至汤白。', tip: '蛋块略炒再加水，汤更浓白。' },
+        { title: '浇汤', text: '加 1/4 tsp 盐调味，将热汤浇在西兰花上即可。' }
+      ]
+    }
+  ],
+  芹菜: [
+    {
+      name: '芹菜炒肉',
+      cover: imgUrl('1565299624942-b3ea128cda57', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '芹菜', amount: '300g' },
+        { name: '猪里脊', amount: '200g' },
+        { name: '生抽', amount: '1 tbsp' },
+        { name: '料酒', amount: '1 tbsp' },
+        { name: '淀粉', amount: '1 tsp' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '备料', text: '芹菜去老筋，斜切 3cm 段；里脊切细丝，加 1 tbsp 料酒、1 tbsp 生抽、1 tsp 淀粉抓匀腌 10 分钟。', tip: '芹菜斜切，断筋更易入味、口感更好。' },
+        { title: '滑炒肉丝', text: '热锅 2 tbsp 油，六成热下肉丝滑散，变色即盛出。' },
+        { title: '炒芹菜', text: '留底油，下芹菜段大火快炒 1 分钟。倒回肉丝，加 1/2 tsp 盐，翻 30 秒出锅。', tip: '芹菜喜大火快炒，保持脆嫩。' }
+      ]
+    },
+    {
+      name: '香干炒芹菜',
+      cover: imgUrl('1565299624942-b3ea128cda57', 800),
+      meta: { time: '12分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '芹菜', amount: '250g' },
+        { name: '香干', amount: '3块（约150g）' },
+        { name: '生抽', amount: '1 tbsp' },
+        { name: '盐', amount: '1/4 tsp' },
+        { name: '食用油', amount: '1 tbsp' }
+      ],
+      steps: [
+        { title: '切配', text: '芹菜斜切段；香干切细条。' },
+        { title: '快炒', text: '热锅 1 tbsp 油，下香干条中火煸 1 分钟至表面微黄。加芹菜段大火炒 1 分钟。' },
+        { title: '调味', text: '加 1 tbsp 生抽、1/4 tsp 盐，翻 30 秒出锅。', tip: '香干本身有咸度，盐宜少放。' }
+      ]
+    },
+    {
+      name: '芹菜拌花生',
+      cover: imgUrl('1565299624942-b3ea128cda57', 800),
+      meta: { time: '20分钟', difficulty: '简单', servings: '2人份' },
+      ingredients: [
+        { name: '芹菜', amount: '200g' },
+        { name: '花生米', amount: '100g' },
+        { name: '生抽', amount: '1 tbsp' },
+        { name: '醋', amount: '1 tbsp' },
+        { name: '香油', amount: '1 tsp' },
+        { name: '盐', amount: '1/4 tsp' }
+      ],
+      steps: [
+        { title: '煮花生', text: '花生米冷水下锅，大火沸后转小火煮 15 分钟至熟，捞出放凉。', tip: '喜欢更脆可改用干锅小火焙花生。' },
+        { title: '焯芹菜', text: '芹菜切寸段，开水焯 1 分钟，过凉沥干。' },
+        { title: '拌匀', text: '芹菜、花生入碗，加生抽、醋、香油、盐拌匀即可。', tip: '冷藏 10 分钟再食，更爽脆。' }
+      ]
+    }
+  ],
+  南瓜: [
+    {
+      name: '清炒南瓜',
+      cover: imgUrl('1576045057995-968165e10240', 800),
+      meta: { time: '15分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '南瓜', amount: '500g' },
+        { name: '蒜', amount: '3瓣' },
+        { name: '盐', amount: '1/2 tsp' },
+        { name: '食用油', amount: '2 tbsp' }
+      ],
+      steps: [
+        { title: '切南瓜', text: '南瓜去皮去瓤，切 0.5cm 厚片或 2cm 滚刀块。蒜切片。', tip: '选老南瓜，清炒后更粉糯香甜。' },
+        { title: '清炒', text: '热锅 2 tbsp 油，下蒜片爆香。倒南瓜片中火翻炒 2 分钟。' },
+        { title: '焖煮', text: '加 3 tbsp 水，盖盖小火焖 3～5 分钟，至南瓜软熟。开盖加 1/2 tsp 盐，大火收干水分即可。', tip: '南瓜自带甜味，通常不需额外加糖。' }
+      ]
+    },
+    {
+      name: '南瓜粥',
+      cover: imgUrl('1576045057995-968165e10240', 800),
+      meta: { time: '40分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '南瓜', amount: '300g' },
+        { name: '大米', amount: '100g' },
+        { name: '水', amount: '800ml' },
+        { name: '冰糖', amount: '适量（可选）' }
+      ],
+      steps: [
+        { title: '备料', text: '南瓜去皮切小块；大米淘洗后浸泡 30 分钟。', tip: '米提前泡，煮出来更绵软。' },
+        { title: '煮粥', text: '锅中加 800ml 水、大米，大火沸后转小火煮 20 分钟，期间不时搅动防粘。' },
+        { title: '加南瓜', text: '下南瓜块，继续煮 15～20 分钟，至南瓜化开、粥体浓稠。', tip: '喜欢更细可关火后用勺压碎南瓜。' },
+        { title: '调味', text: '按口味加少量冰糖或盐（咸口），搅匀即可。' }
+      ]
+    },
+    {
+      name: '南瓜饼',
+      cover: imgUrl('1576045057995-968165e10240', 800),
+      meta: { time: '35分钟', difficulty: '简单', servings: '2-3人份' },
+      ingredients: [
+        { name: '南瓜', amount: '300g' },
+        { name: '糯米粉', amount: '150g' },
+        { name: '白糖', amount: '2 tbsp' },
+        { name: '食用油', amount: '适量（煎制用）' }
+      ],
+      steps: [
+        { title: '蒸南瓜', text: '南瓜去皮切厚片，蒸锅大火蒸 15 分钟至能用勺轻松压泥。', tip: '蒸比煮含水量更可控。' },
+        { title: '和面团', text: '南瓜压泥，趁温加 2 tbsp 白糖，分次加入 150g 糯米粉，揉至不粘手的软面团。', tip: '糯米粉用量依南瓜湿度调整，以能成团为准。' },
+        { title: '煎制', text: '取 30g 面团搓圆压扁。平底锅中火少油，煎至两面金黄即可。', tip: '火不要太大，以免外焦里未熟。' }
+      ]
+    }
+  ]
+};
+
+const emojiMap = {
+  '鸡蛋':'🥚', '土豆':'🥔', '鸡胸肉':'🍗', '猪肉':'🥩', '番茄':'🍅',
+  '豆腐':'🧈', '牛肉':'🥩', '鱼':'🐟', '茄子':'🍆', '白菜':'🥬',
+  '虾':'🦐', '排骨':'🍖', '黄瓜':'🥒', '香菇':'🍄', '面条':'🍜',
+  '玉米':'🌽', '羊肉':'🐑', '西兰花':'🥦', '芹菜':'🌿', '南瓜':'🎃'
+};
+
+const allIngredients = Object.keys(recipeDB);
+const MAX_ROLLS = 3;
+
+let cardIdCounter = 0;
+
+// ===== 今日剩余次数 =====
+function getTodayKey() {
+  const d = new Date();
+  return 'rolls_' + d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+}
+
+function resetTodayRolls() {
+  localStorage.removeItem(getTodayKey());
+}
+
+// 版本升级时一次性重置今日次数（之后仍按每日 3 次累计）
+function migrateRollLimitIfNeeded() {
+  const MIGRATION_KEY = 'rolls_limit_v3';
+  if (!localStorage.getItem(MIGRATION_KEY)) {
+    resetTodayRolls();
+    localStorage.setItem(MIGRATION_KEY, '1');
+  }
+}
+
+function getRollsUsed() {
+  const key = getTodayKey();
+  const val = localStorage.getItem(key);
+  return val ? parseInt(val) : 0;
+}
+
+function incrementRolls() {
+  const key = getTodayKey();
+  const used = getRollsUsed() + 1;
+  localStorage.setItem(key, used);
+  // 清理旧日期的记录
+  const allKeys = Object.keys(localStorage);
+  for (const k of allKeys) {
+    if (k.startsWith('rolls_') && k !== key) {
+      localStorage.removeItem(k);
+    }
+  }
+}
+
+function getRemainingRolls() {
+  return Math.max(0, MAX_ROLLS - getRollsUsed());
+}
+
+// ===== 背景粒子 =====
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.width = (Math.random() * 60 + 20) + 'px';
+    p.style.height = p.style.width;
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    container.appendChild(p);
+  }
+}
+
+// ===== 渲染点数 =====
+function renderRollDots() {
+  const container = document.getElementById('rollCounter');
+  const used = getRollsUsed();
+  const remaining = getRemainingRolls();
+  let html = '';
+  for (let i = 0; i < MAX_ROLLS; i++) {
+    html += `<span class="roll-dot${i < used ? ' used' : ''}"></span>`;
+  }
+  container.innerHTML = html;
+
+  const textEl = document.getElementById('rollText');
+  const btn = document.getElementById('btnDice');
+
+  if (remaining === 0) {
+    textEl.textContent = '别翻啦，别翻啦，行动起来吧！';
+    btn.classList.add('disabled');
+  } else {
+    textEl.textContent = '剩余 ' + remaining + ' 次';
+    btn.classList.remove('disabled');
+  }
+}
+
+// ===== 掷骰子 =====
+function rollDice() {
+  const remaining = getRemainingRolls();
+  if (remaining === 0) return;
+
+  const btn = document.getElementById('btnDice');
+  btn.classList.add('rolling');
+  setTimeout(function() { btn.classList.remove('rolling'); }, 800);
+
+  const idx = Math.floor(Math.random() * allIngredients.length);
+  const ingredient = allIngredients[idx];
+
+  incrementRolls();
+  renderRollDots();
+
+  addCard(ingredient);
+}
+
+// ===== 新增卡片（保留已有卡片） =====
+function addCard(ingredient) {
+  const cardId = cardIdCounter++;
+  const emoji = emojiMap[ingredient] || '🍳';
+  const stage = document.getElementById('cardStage');
+
+  const container = document.createElement('div');
+  container.className = 'card-container';
+  container.id = 'card-' + cardId;
+  container.dataset.ingredient = ingredient;
+
+  container.innerHTML = `
+    <div class="card-inner">
+      <div class="card-face card-front" onclick="onCardClick(${cardId})">
+        <div class="mystery-emoji">${emoji}</div>
+        <div class="mystery-text">${escapeHtml(ingredient)}</div>
+        <span class="mystery-hint">点击翻开看做法</span>
+      </div>
+      <div class="card-face card-back">${buildCardBackHtml(ingredient, cardId)}</div>
+    </div>
+  `;
+
+  stage.appendChild(container);
+
+  setTimeout(function() {
+    container.querySelector('.card-front').classList.add('revealed');
+  }, 200);
+
+  setTimeout(function() {
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 300);
+}
+
+function buildCardBackHtml(ingredient, cardId) {
+  const emoji = emojiMap[ingredient] || '🍳';
+  const recipes = recipeDB[ingredient].map(normalizeRecipe);
+
+  const listHtml = recipes.map(function(r, ri) {
+    const thumb = r.cover
+      ? `<img class="recipe-thumb" src="${escapeHtml(r.cover)}" alt="${escapeHtml(r.name)}" loading="lazy" onerror="hideBrokenImage(this)">`
+      : `<div class="recipe-thumb-placeholder">${emoji}</div>`;
+    const metaTags = [r.meta.time, r.meta.difficulty].filter(Boolean)
+      .map(function(t) { return `<span class="recipe-meta-tag">${escapeHtml(t)}</span>`; }).join('');
+    const tags = r.ingredients.slice(0, 4).map(function(ing) {
+      const label = ing.amount ? ing.name + ' ' + ing.amount : ing.name;
+      return `<span class="mini-tag">${escapeHtml(label)}</span>`;
+    }).join('');
+    return `
+      <div class="recipe-item" onclick="event.stopPropagation(); showDetail('${ingredient}', ${ri})">
+        ${thumb}
+        <div class="recipe-item-body">
+          <div class="recipe-name">${escapeHtml(r.name)}</div>
+          ${metaTags ? `<div class="recipe-meta-tags">${metaTags}</div>` : ''}
+          <div class="recipe-ingredients">${tags}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="back-title">${emoji} ${escapeHtml(ingredient)} · ${recipes.length}种做法</div>
+    <div class="recipe-list">${listHtml}</div>
+    <div class="back-footer" onclick="event.stopPropagation(); unflipCard(${cardId})">▲ 翻回正面</div>
+  `;
+}
+
+// ===== 点击卡片正面 =====
+function onCardClick(cardId) {
+  const container = document.getElementById('card-' + cardId);
+  if (!container || container.classList.contains('flipped')) return;
+  container.classList.add('flipped');
+}
+
+function unflipCard(cardId) {
+  const container = document.getElementById('card-' + cardId);
+  if (container) container.classList.remove('flipped');
+}
+
+// ===== 详情弹窗 =====
+function showDetail(ingredient, index) {
+  const recipe = normalizeRecipe(recipeDB[ingredient][index]);
+  const overlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('modal');
+
+  const metaPills = [recipe.meta.time, recipe.meta.difficulty, recipe.meta.servings]
+    .filter(Boolean)
+    .map(function(m) { return `<span class="recipe-meta-pill">${escapeHtml(m)}</span>`; })
+    .join('');
+
+  const ingredientRows = recipe.ingredients.map(function(ing) {
+    return `
+      <div class="ingredient-grid-row">
+        <span class="ing-name">${escapeHtml(ing.name)}</span>
+        <span class="ing-amount">${escapeHtml(ing.amount || '适量')}</span>
+      </div>`;
+  }).join('');
+
+  const stepCards = recipe.steps.map(function(step, idx) {
+    const tipHtml = step.tip
+      ? `<div class="step-tip">${escapeHtml(step.tip)}</div>`
+      : '';
+    return `
+      <div class="step-card">
+        <div class="step-card-body">
+          <div class="step-card-header">
+            <span class="step-num">${idx + 1}</span>
+            <h5>${escapeHtml(step.title)}</h5>
+          </div>
+          <div class="step-card-text">${escapeHtml(step.text)}</div>
+          ${tipHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  const heroImg = recipe.cover
+    ? `<img src="${escapeHtml(recipe.cover)}" alt="${escapeHtml(recipe.name)}" loading="lazy" onerror="hideBrokenImage(this)">`
+    : '';
+
+  modal.innerHTML = `
+    <div class="recipe-hero">
+      ${heroImg}
+      <div class="modal-close-bar">
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="recipe-hero-overlay">
+        <h2>${escapeHtml(recipe.name)}</h2>
+        <div class="hero-sub">主食材：${escapeHtml(ingredient)}</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      ${metaPills ? `<div class="section"><div class="recipe-meta">${metaPills}</div></div>` : ''}
+      <div class="section">
+        <h4>🧂 所需配料</h4>
+        <div class="ingredient-grid">${ingredientRows}</div>
+      </div>
+      <div class="section">
+        <h4>👨‍🍳 详细步骤</h4>
+        <div class="step-cards">${stepCards}</div>
+      </div>
+    </div>
+  `;
+
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ===== 启动 =====
+createParticles();
+migrateRollLimitIfNeeded();
+renderRollDots();
+</script>
+
+</body>
+</html>
